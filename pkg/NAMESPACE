@@ -1,0 +1,15 @@
+
+export(create.dataset)
+export(plot)
+export(read.metadata)
+export(create.fileskeleton)
+export(setupsummary)
+export(samplegrid)
+export(formatFunc)
+export(timesamples)
+
+exportMethods(
+    "generate.data",
+    "plot" 
+)
+

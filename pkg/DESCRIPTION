@@ -1,0 +1,12 @@
+Package: bdlp
+Type: Package
+Title: data generation functions for the BDLP web app
+Version: 1.0
+Date: 2014-09-25
+Author: Rainer Dangl
+Maintainer: Rainer Dangl <rainer.dangl@boku.ac.at>
+Description: contains the data generating function required to process the
+    metadata source code file downloaded from the BDLP web application.
+License: GPL
+Depends:
+    methods
