@@ -134,6 +134,7 @@ setGeneric("plot", function(m, option) standardGeneric("plot"))
  
 setMethod("plot", signature(m = "metadata.metric", option = "numeric"),
 function(m, option){
+  options(rgl.useNULL=TRUE)
   require(rgl)
   data <- generate.data(m)
   pr <- prcomp(data)
@@ -187,14 +188,14 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit){
   d[11+l+6] <- "  # and create new metadata object"
   
   
-  if(type=="met")
+  if(type=="metric")
     d[11+l+8] <- "  new(\"metadata.metric\", ...)"
-  if(type=="func")
+  if(type=="functional")
     d[11+l+8] <- "  new(\"metadata.functional\", ...)"
-  if(type=="ord")
+  if(type=="ordinal")
     d[11+l+8] <- "  new(\"metadata.ordinal\", ...)"
 
-  d[(11+l+10):(11+l+16)] <- 
+  d[(11+l+10):(11+l+16)] <- ""
   
   d[11+l+10] <- "}"
   d[11+l+11] <- ""
