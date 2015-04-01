@@ -186,7 +186,7 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit){
   
   d[11+l+5] <- "  # calculate metadata for a given setnr and seed"
   d[11+l+6] <- "  # and create new metadata object"
-  
+  d[11+l+7] <- ""
   
   if(type=="metric")
     d[11+l+8] <- "  new(\"metadata.metric\", ...)"
@@ -194,8 +194,10 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit){
     d[11+l+8] <- "  new(\"metadata.functional\", ...)"
   if(type=="ordinal")
     d[11+l+8] <- "  new(\"metadata.ordinal\", ...)"
+  
+  d[11+l+9] <- ""
 
-  d[(11+l+10):(11+l+16)] <- ""
+
   
   d[11+l+10] <- "}"
   d[11+l+11] <- ""
