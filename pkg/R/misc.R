@@ -154,11 +154,12 @@ function(m){
   }
 })
 
-create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit){
-
-  #filename <- paste(newname,".R", sep="")
-
-  #file.create(filename)
+create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, codefile = TRUE){
+  
+  if(codefile == TRUE)
+    filename <- paste(newname,".R", sep="")
+    file.create(filename)
+  }
   
   d <- vector("character", 10)
   
@@ -211,10 +212,13 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit){
   
   d[is.na(d)] <- ""
   
-  #con <- file(filename)
-  #writeLines(d,con)
-  #close(con)
-  d
+  if(filename == T) {
+    con <- file(filename)
+    writeLines(d,con)
+    close(con)
+  } else {
+    return(d)
+  }
 }
 
 read.metadata <- function(name, setnr, seed){
