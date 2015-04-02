@@ -156,7 +156,7 @@ function(m){
 
 create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, codefile = TRUE){
   
-  if(codefile == TRUE)
+  if(codefile == TRUE) {
     filename <- paste(newname,".R", sep="")
     file.create(filename)
   }
@@ -212,7 +212,7 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
   
   d[is.na(d)] <- ""
   
-  if(filename == T) {
+  if(codefile == T) {
     con <- file(filename)
     writeLines(d,con)
     close(con)
@@ -231,6 +231,3 @@ setupsummary <- function(name) {
   d$summary <- cbind(setnr = 1:rows, d$summary)
   d
 }
-
-
-
