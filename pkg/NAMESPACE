@@ -1,6 +1,7 @@
 
 export(create.dataset)
 export(plot)
+export(update.metadata)
 export(read.metadata)
 export(create.fileskeleton)
 export(setupsummary)
