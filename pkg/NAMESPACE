@@ -1,3 +1,5 @@
+require(bindata)
+require(MASS)
 
 export(create.dataset)
 export(plot)

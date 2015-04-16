@@ -31,7 +31,8 @@ setClass("metadata.common",
                         retval <- "Inconsistencies in slot 'clusters' regarding number of arguments"
                       retval
                     },
-         prototype = prototype(seed = 100))
+         prototype = prototype(seed = 100,
+                               k = length(clusters)))
 
 setClass("metadata.metric",
          contains = "metadata.common",
@@ -100,5 +101,24 @@ setClass("metadata.ordinal",
                       retval
          },
          prototype = prototype(dist = "ordsample"))
+         
+         
+setClass("metadata.binary",
+         contains = "metadata.common",
+         validity = function(object){
+			          retval = NULL
+			          if(!all(unlist(lapply(clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
+                      retval <- "Nonconforming arguments found in slot 'clusters'"
+                      retval
+	     },
+		 prototype = prototype(dist = "rmvbin"))
+		 
 
+#setClass("metadata.mixed",
+#         contains = "metadata.common",
+#         validity = function(object){
+#			 
+#			 
+#		 },
+#		 prototype = prototype(
 
