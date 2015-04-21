@@ -3,24 +3,24 @@
 setClass("metadata.common",
          representation(clusters = "list",
                         dist = "character",
-                        seed = "numeric",
-                        vars = "numeric",
-                        total_n = "numeric",
-                        k = "numeric"),
+                        seed = "numeric"),
+#                        vars = "numeric",
+#                        total_n = "numeric",
+#                        k = "numeric"),
          validity = function(object){
                       retval <- NULL
                       #checking whethere there are exactly as many entries in 'clusters' than the number in 'k'
-                      if(length(object@clusters) != object@k)
-                        retval <- "No. of list entries in slot 'clusters' and no. of clusters in slot 'k' do not match"
+#                      if(length(object@clusters) != object@k)
+#                        retval <- "No. of list entries in slot 'clusters' and no. of clusters in slot 'k' do not match"
                       #checking whether k does not exceed the number of observations
-                      if(object@total_n < object@k)
-                        retval <- "Fewer observations than clusters"
+#                      if(object@total_n < object@k)
+#                        retval <- "Fewer observations than clusters"
                       #checking whether all lists stored in 'cluster' are really lists
-                      checkval <- sum(unlist(lapply(object@clusters, function(x) is.list(x))))
-                      if(checkval != object@k)
-                        retval <- "Number of list entries in slot 'clusters' and number of actual cluster do not match"
+#                      checkval <- sum(unlist(lapply(object@clusters, function(x) is.list(x))))
+#                      if(checkval != object@k)
+#                        retval <- "Number of list entries in slot 'clusters' and number of actual cluster do not match"
                       #checking whether all cluster metadata arguments are valid arguments for the data generating function
-                      for(i in 1:object@k) {
+                      for(i in 1:length(object@clusters)) {
                         if(!all(names(object@clusters[[i]]) %in% names(formals(get(object@dist))))){
                           retval <- "Distribution function arguments and cluster metadata names do not match" 
                         }
@@ -31,8 +31,8 @@ setClass("metadata.common",
                         retval <- "Inconsistencies in slot 'clusters' regarding number of arguments"
                       retval
                     },
-         prototype = prototype(seed = 100,
-                               k = length(clusters)))
+         prototype = prototype(seed = 100
+                               ))
 
 setClass("metadata.metric",
          contains = "metadata.common",
@@ -50,9 +50,9 @@ setClass("metadata.metric",
                     #    retval <- "Dimensionality mismatch between slot 'vars' and at least one cluster center"
                     
                     #checking whether cluster center dimensionality of each cluster metadata list matches the overall number
-                      argnum <- sum(unlist(lapply(object@clusters, function(x) lapply(x, function(y) length(y) == object@vars))))
-                      if(argnum != object@k)
-                        retval <- "Dimensionality mismatch between slot 'vars' and at least one cluster center"
+#                      argnum <- sum(unlist(lapply(object@clusters, function(x) lapply(x, function(y) length(y) == object@vars))))
+#                      if(argnum != object@k)
+#                        retval <- "Dimensionality mismatch between slot 'vars' and at least one cluster center"
                     retval
                     },
          prototype = prototype(standardization = "NONE",

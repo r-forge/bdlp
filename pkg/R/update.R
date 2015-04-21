@@ -19,6 +19,16 @@ update.metadata <- function(m, ...){
   m
 }
 
+initialize.object <- function(type, k, distfunc, seed){
+  
+  cl <- paste("cl", 1:k, sep="")
+  clusters <- list()
+  clusters <- sapply(cl,function(x) NULL)
+  clusters <- lapply(clusters, function(x) formals(distfunc))
+  
+  new(type, clusters=clusters, seed=seed, dist=distfunc)
+
+}
 
 save.setup <- function(name, type, author, mail, inst, cit = "Unpublished", objects, table, seed, ...){
 	
