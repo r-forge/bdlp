@@ -16,15 +16,25 @@ update.metadata <- function(m, ...){
     wrong <- a[!(a %in% slotNames(m))]
     print(paste("Argument", wrong, "not defined in the metadata object!", sep= " "))
   }
-  m
+  return(m)
 }
 
 add.cluster <- function(m, ...){
-
-
+  prev <- length(m@clusters)
+  new <- paste("cl", prev + 1, sep="")
+  eval(parse(text=(paste("m@clusters$", new, " <- formals(m@dist)", sep=""))))
+  return(m)
 }
 
 delete.cluster <- function(m, clnumber){
+  m@clusters <- m@clusters[-clnumber]
+  l <- length(names(m@clusters))
+  names(m@clusters) <- paste("cl", 1:l, sep="")
+  return(m)
+}
+
+modify.cluster <- function(m, cluster, ...) {
+  
 
 
 }

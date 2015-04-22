@@ -38,12 +38,20 @@ setMethod("generate.data", signature(m = "metadata.metric"),
 function(m){
   
   set.seed(m@seed)
+  total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
+  k <- length(m@clusters)
+  
+  for(i in 1:length(clusters$cl1)){
+    if(is.matrix(clusters$cl1[[i]]))
+      vars <- ncol(clusters$cl1[[i]])
+  }
+  
   samp <- get(m@dist)
   
-  datamatrix <- matrix(0, nrow=m@total_n, ncol=m@vars)
+  datamatrix <- matrix(0, nrow=total_n, ncol=vars)
   
   clus <- list()
-  for(i in 1:m@k){
+  for(i in 1:k){
     clus[[i]] <- do.call(samp, m@clusters[[i]])
   }
   datamatrix <- do.call(rbind, clus)
@@ -89,11 +97,17 @@ function(m){
 
   require("GenOrd")
   samp <- get(m@dist)
+  total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
+  k <- length(m@clusters)
+  for(i in 1:length(clusters$cl1)){
+    if(is.matrix(clusters$cl1[[i]]))
+      vars <- ncol(clusters$cl1[[i]])
+  }
   
-  datamatrix <- matrix(0, nrow=m@total_n, ncol=m@vars)
+  datamatrix <- matrix(0, nrow=total_n, ncol=vars)
   
   clus <- list()
-  for(i in 1:m@k){
+  for(i in 1:k){
     clus[[i]] <- do.call(samp, m@clusters[[i]])
   }
   datamatrix <- do.call(rbind, clus)
