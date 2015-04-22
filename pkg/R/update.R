@@ -19,6 +19,17 @@ update.metadata <- function(m, ...){
   m
 }
 
+add.cluster <- function(m, ...){
+
+
+}
+
+delete.cluster <- function(m, clnumber){
+
+
+}
+
+
 initialize.object <- function(type, k, distfunc, seed){
   
   cl <- paste("cl", 1:k, sep="")
@@ -30,7 +41,7 @@ initialize.object <- function(type, k, distfunc, seed){
 
 }
 
-save.setup <- function(name, type, author, mail, inst, cit = "Unpublished", objects, table, seed, ...){
+save.setup <- function(name, type, author, mail, inst, cit = "Unpublished", objects, table, seed, custom_funcs = NULL, ...){
 	
 	newname <- paste(strsplit(name, ".R")[[1]], ".R", sep="")
 	funcname <- strsplit(name, ".R")[[1]]
@@ -58,5 +69,15 @@ save.setup <- function(name, type, author, mail, inst, cit = "Unpublished", obje
 	  cat(paste("    ", capture.output(dput(objects[[i]]))[-1], "\n", sep =""), file = newname, append = T)	
 	  cat("    )\n", file = newname, append=T)
 	}    
-	cat("}", file = newname, append=T)
+	cat("} \n \n", file = newname, append=T)
+	
+	if(!is.null(custom_funcs)) {
+	  cat("# Custom functions: \n \n", file = newname, append=T)
+	  
+	  for(i in 1:length(custom_funcs)){
+	    u <- capture.output(dput(custom_funcs[i]))
+	    u[1] <- paste(custom_funcs[i], u[1], sep="")
+	    cat(paste(u, "\n \n", sep=""), file = newname, append=T)
+	  }  
+	}
 }
