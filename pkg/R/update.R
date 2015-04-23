@@ -33,11 +33,6 @@ delete.cluster <- function(m, clnumber){
   return(m)
 }
 
-modify.cluster <- function(m, cluster, ...) {
-  
-
-
-}
 
 
 initialize.object <- function(type, k, distfunc, seed){
