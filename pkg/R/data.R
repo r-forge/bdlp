@@ -1,10 +1,11 @@
 ## main function to create a dataset
 
-create.dataset <- function(name, setnr = NULL, draws = 1, seedVersion = NULL, seedKind = NULL, seed, newsetup = NULL, file = NULL){
+create.dataset <- function(name, setnr = NULL, draws = 1, newsetup = NULL, file = NULL){
 
-  if(!is.null(seedKind)) RNGkind(seedKind)
-  if(!is.null(seedVersion)) RNGversion(seedVersion)
+  #if(!is.null(seedKind)) RNGkind(seedKind)
+  #if(!is.null(seedVersion)) RNGversion(seedVersion)
   if(!is.null(newsetup)) source(newsetup)
+  
   pb <- txtProgressBar(min = 0, max = draws, style = 3)
 
   if(is.null(file)){ 
@@ -18,7 +19,7 @@ create.dataset <- function(name, setnr = NULL, draws = 1, seedVersion = NULL, se
   
   for(i in 1:draws){
     seed <- seed + 1
-    metadata <- read.metadata(name = name, setnr = setnr, seed = seed)
+    metadata <- read.metadata(name = name, setnr = setnr)
     output <- generate.data(metadata)
     writeToDatabase(output, dbname, i) 
     Sys.sleep(0.1)
@@ -37,6 +38,8 @@ setGeneric("generate.data", function(m) standardGeneric("generate.data"))
 setMethod("generate.data", signature(m = "metadata.metric"),
 function(m){
   
+  RNGversion(m@RNGversion)
+  RNGkind(kind = m@RNGkind[1], normal.kind = m@RNGkind[2])
   set.seed(m@seed)
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
@@ -67,7 +70,10 @@ function(m){
 setMethod("generate.data", signature(m = "metadata.functional"), 
 function(m){
   
+  RNGversion(m@RNGversion)
+  RNGkind(kind = m@RNGkind[1], normal.kind = m@RNGkind[2])
   set.seed(m@seed)
+  
   nf <- length(m@functions)
   gridMatrix <- m@gridMatrix
   xvalvector <- yvalvector <- cluster <-  vector()
