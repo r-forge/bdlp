@@ -1,9 +1,10 @@
 ## main function to create a dataset
 
-create.dataset <- function(name, setnr = NULL, draws = 1, newsetup = NULL, file = NULL){
+create.dataset <- function(name, setnr = NULL, draws = 1, rng = NULL, 
+                           rv = NULL , seed = NULL, newsetup = NULL, file = NULL){
 
-  #if(!is.null(seedKind)) RNGkind(seedKind)
-  #if(!is.null(seedVersion)) RNGversion(seedVersion)
+  if(!is.null(rng)) RNGkind(rng[1]. rng[2])
+  if(!is.null(rv)) RNGversion(rv)
   if(!is.null(newsetup)) source(newsetup)
   
   pb <- txtProgressBar(min = 0, max = draws, style = 3)
@@ -19,7 +20,7 @@ create.dataset <- function(name, setnr = NULL, draws = 1, newsetup = NULL, file 
   
   for(i in 1:draws){
     seed <- seed + 1
-    metadata <- read.metadata(name = name, setnr = setnr)
+    metadata <- read.metadata(name = name, setnr = setnr, seed = seed, rng = rng, rv =rv)
     output <- generate.data(metadata)
     writeToDatabase(output, dbname, i) 
     Sys.sleep(0.1)
