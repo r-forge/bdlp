@@ -67,8 +67,6 @@ save.setup <- function(name, type, author, mail, inst, cit = "Unpublished", obje
 	
 	cat("  # For a specified seed and setnr, return the respective metadata object \n \n", file = newname, append=T)
 	cat(paste("  set.seed(", seed, ") \n \n", sep=""), file = newname, append=T)
-	cat(paste("  RNGkind(kind=", RNG[1], ", normal.kind=", RNG[2]") \n \n", sep=""), file = newname, append=T)
-	cat(paste("  RNGversion(", Rversion, ") \n \n", sep=""), file = newname, append=T)
 	
 	for(i in 1:objlength){
 	  cat(paste("  if(setnr == ",  i, ") \n \n", sep =""), file = newname, append=T)

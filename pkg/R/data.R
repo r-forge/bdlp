@@ -3,7 +3,7 @@
 create.dataset <- function(name, setnr = NULL, draws = 1, rng = NULL, 
                            rv = NULL , seed = NULL, newsetup = NULL, file = NULL){
 
-  if(!is.null(rng)) RNGkind(rng[1]. rng[2])
+  if(!is.null(rng)) RNGkind(rng[1], rng[2])
   if(!is.null(rv)) RNGversion(rv)
   if(!is.null(newsetup)) source(newsetup)
   
@@ -20,7 +20,7 @@ create.dataset <- function(name, setnr = NULL, draws = 1, rng = NULL,
   
   for(i in 1:draws){
     seed <- seed + 1
-    metadata <- read.metadata(name = name, setnr = setnr, seed = seed, rng = rng, rv =rv)
+    metadata <- read.metadata(name = name, setnr = setnr, seed = seed)
     output <- generate.data(metadata)
     writeToDatabase(output, dbname, i) 
     Sys.sleep(0.1)
@@ -39,8 +39,6 @@ setGeneric("generate.data", function(m) standardGeneric("generate.data"))
 setMethod("generate.data", signature(m = "metadata.metric"),
 function(m){
   
-  RNGversion(m@RNGversion)
-  RNGkind(kind = m@RNGkind[1], normal.kind = m@RNGkind[2])
   set.seed(m@seed)
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
@@ -71,8 +69,6 @@ function(m){
 setMethod("generate.data", signature(m = "metadata.functional"), 
 function(m){
   
-  RNGversion(m@RNGversion)
-  RNGkind(kind = m@RNGkind[1], normal.kind = m@RNGkind[2])
   set.seed(m@seed)
   
   nf <- length(m@functions)
@@ -103,6 +99,7 @@ setMethod("generate.data", signature(m = "metadata.ordinal"),
 function(m){
 
   require("GenOrd")
+  set.seed(m@seed)
   samp <- get(m@dist)
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
