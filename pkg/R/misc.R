@@ -140,7 +140,7 @@ function(m, option){
   pr <- prcomp(data)
   prpred <- predict(pr, data)
   mems <- unlist(lapply(m@clusters, function(x) x$n))
-  mems <- rep(1:m@k, mems)
+  mems <- rep(1:length(m@clusters), mems)
   if(option == 1) plot.default(prpred[,1:2], col=mems) else plot3d(prpred[,1:3], col=mems)
 })
 

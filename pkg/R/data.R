@@ -43,9 +43,10 @@ function(m){
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
   
-  for(i in 1:length(clusters$cl1)){
-    if(is.matrix(clusters$cl1[[i]]))
-      vars <- ncol(clusters$cl1[[i]])
+  #zum Ermitteln der Variablenanzahl - noch zu Verbessern
+  for(i in 1:length(m@clusters$c1)){
+    if(is.matrix(m@clusters$c1[[i]]))
+      vars <- ncol(m@clusters$c1[[i]])
   }
   
   samp <- get(m@dist)
@@ -103,9 +104,9 @@ function(m){
   samp <- get(m@dist)
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
-  for(i in 1:length(clusters$cl1)){
-    if(is.matrix(clusters$cl1[[i]]))
-      vars <- ncol(clusters$cl1[[i]])
+  for(i in 1:length(m@clusters$c1)){
+    if(is.matrix(m@clusters$c1[[i]]))
+      vars <- ncol(m@clusters$c1[[i]])
   }
   
   datamatrix <- matrix(0, nrow=total_n, ncol=vars)
