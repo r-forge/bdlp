@@ -44,9 +44,9 @@ function(m){
   k <- length(m@clusters)
   
   #zum Ermitteln der Variablenanzahl - noch zu Verbessern
-  for(i in 1:length(m@clusters$c1)){
-    if(is.matrix(m@clusters$c1[[i]]))
-      vars <- ncol(m@clusters$c1[[i]])
+  for(i in 1:length(m@clusters[[1]])){
+    if(is.matrix(m@clusters[[1]][[i]]))
+      vars <- ncol(m@clusters[[1]][[i]])
   }
   
   samp <- get(m@dist)
