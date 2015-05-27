@@ -221,8 +221,13 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
   }
 }
 
-read.metadata <- function(name, setnr, seed){
-    do.call(name, list(setnr=setnr, seed=seed))
+read.metadata <- function(name, setnr, seedinfo = list(100, 
+                                      paste(R.version$major, R.version$minor, sep = "."),
+                                      RNGkind()), 
+                                      metaseedinfo = list(100, 
+                                      paste(R.version$major, R.version$minor, sep = "."),
+                                      RNGkind())){
+    do.call(name, list(setnr=setnr, seedinfo=seedinfo, metaseedinfo=metaseedinfo))
 }
 
 setupsummary <- function(name) {

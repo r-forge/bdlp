@@ -3,7 +3,7 @@
 setClass("metadata.common",
          representation(clusters = "list",
                         dist = "character",
-                        seed = "numeric"),
+                        seedinfo = "list"),
 #                        vars = "numeric",
 #                        total_n = "numeric",
 #                        k = "numeric"),
@@ -31,7 +31,9 @@ setClass("metadata.common",
                         retval <- "Inconsistencies in slot 'clusters' regarding number of arguments"
                       retval
                     },
-         prototype = prototype(seed = 100
+         prototype = prototype(seedinfo = list(100, 
+                                          paste(R.version$major, R.version$minor, sep = "."),
+                                          RNGkind())
                               ))
 
 setClass("metadata.metric",

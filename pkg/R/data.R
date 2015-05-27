@@ -1,16 +1,22 @@
 ## main function to create a dataset
 
-create.dataset <- function(name, setnr = NULL, draws = 1, rng = NULL, 
-                           rv = NULL , seed = NULL, newsetup = NULL, file = NULL){
+create.dataset <- function(name, setnr = NULL, draws = 1,  
+                           seedinfo = list(100, 
+                                           paste(R.version$major, R.version$minor, sep = "."),
+                                           RNGkind()), 
+                           metaseedinfo = list(100, 
+                                           paste(R.version$major, R.version$minor, sep = "."),
+                                           RNGkind()),
+                           newsetup = NULL, file = NULL, increment = T){
 
-  if(!is.null(rng)) RNGkind(rng[1], rng[2])
-  if(!is.null(rv)) RNGversion(rv)
+  #if(!is.null(rng)) RNGkind(rng[1], rng[2])
+  #if(!is.null(rv)) RNGversion(rv)
   if(!is.null(newsetup)) source(newsetup)
   
   pb <- txtProgressBar(min = 0, max = draws, style = 3)
 
   if(is.null(file)){ 
-    dbname <- paste(name, "_set_", setnr, "_", "seed_", seed ,".db", sep="")
+    dbname <- paste(name, "_set_", setnr, "_", "seed_", seedinfo[[1]] ,".db", sep="")
     file.create(dbname) 
   }
   else {
@@ -19,8 +25,8 @@ create.dataset <- function(name, setnr = NULL, draws = 1, rng = NULL,
   }
   
   for(i in 1:draws){
-    seed <- seed + 1
-    metadata <- read.metadata(name = name, setnr = setnr, seed = seed)
+    if(increment == T) seedinfo[[1]] <- seedinfo[[1]] + 1
+    metadata <- read.metadata(name = name, setnr = setnr, seedinfo = seedinfo, metaseedinfo = metaseedinfo)
     output <- generate.data(metadata)
     writeToDatabase(output, dbname, i) 
     Sys.sleep(0.1)
@@ -29,7 +35,7 @@ create.dataset <- function(name, setnr = NULL, draws = 1, rng = NULL,
   close(pb)
   cat("\n")
   cat(paste(draws, "version(s) of set no.", setnr, "of", name, "experimental setup generated.\n"))
-  cat(paste("Base seed ", seed-draws, " was used and is included in filename.\n", sep=""))
+  cat(paste("Base seed ", seedinfo[[1]]-draws, " was used and is included in filename.\n", sep=""))
 }
 
 ## actual data generators
@@ -38,8 +44,11 @@ setGeneric("generate.data", function(m) standardGeneric("generate.data"))
 
 setMethod("generate.data", signature(m = "metadata.metric"),
 function(m){
+	
+  set.seed(m@seedinfo[[1]])
+  RNGversion(m@seedinfo[[2]])
+  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
   
-  set.seed(m@seed)
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
   
@@ -70,7 +79,9 @@ function(m){
 setMethod("generate.data", signature(m = "metadata.functional"), 
 function(m){
   
-  set.seed(m@seed)
+  set.seed(m@seedinfo[[1]])
+  RNGversion(m@seedinfo[[2]])
+  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
   
   nf <- length(m@functions)
   gridMatrix <- m@gridMatrix
@@ -100,7 +111,10 @@ setMethod("generate.data", signature(m = "metadata.ordinal"),
 function(m){
 
   require("GenOrd")
-  set.seed(m@seed)
+  
+  set.seed(m@seedinfo[[1]])
+  RNGversion(m@seedinfo[[2]])
+  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
   samp <- get(m@dist)
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
