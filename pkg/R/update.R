@@ -46,7 +46,7 @@ initialize.object <- function(type, k, distfunc, seed){
 
 }
 
-save.setup <- function(name, type, author, mail, inst, cit = "Unpublished", objects, table, seed, custom_funcs = NULL, ...){
+save.setup <- function(name, author, mail, inst, cit = "Unpublished", objects, table, seed, custom_funcs = NULL, ...){
 	
 	newname <- paste(strsplit(name, ".R")[[1]], ".R", sep="")
 	funcname <- strsplit(name, ".R")[[1]]
