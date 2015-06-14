@@ -123,7 +123,7 @@ check.setup <- function(file){
 
 updateLibrary <- function(name){
   func <- get(name)
-  m <- func(1,1)
+  m <- func(1)
   type <- strsplit(class(m)[1], "metadata.")[[1]][2]
   lib <- read.csv("data/library.csv")
   newlib <- rbind(lib, data.frame(type=type, name=name))
@@ -153,6 +153,73 @@ function(m){
     lines(data$xvalvector[data$curves == i], data$yvalvector[data$curves == i], col = i)
   }
 })
+
+setMethod("plot", signature(m = "metadata.ordinal"),
+function(m){
+  data <- generate.data(m)
+  k <- length(m@clusters)
+  
+  n <- vector()
+  
+  for(i in 1:length(m@clusters)){
+    for(j in 1:length(m@clusters[[i]])){
+      if(length(m@clusters[[i]][[j]]) == 1)
+        n[i] <- m@clusters[[i]][[j]] 
+    }
+  }
+  
+  cu <- cumsum(n)
+  
+  if(k < 5) form <- c(2,2)
+  if(k > 4 && k < 10) form <- c(3,3)
+  if(k > 9 && k < 17) form <- c(4,4)
+  
+  
+  par(mfrow=c(form))
+  for(i in 1:k){
+    if(i == 1) {
+		mat <- sapply(data[1:cu[i],], function(x) table(x))
+	} else {
+		mat <- sapply(data[(cu[i-1]+1):(cu[i]),], function(x) table(x))
+	}
+    p <- prop.table(mat, margin=2)
+    barplot(p, col = rainbow(nrow(mat)))
+  }
+})
+
+setMethod("plot", signature(m = "metadata.binary"),
+function(m){
+  data <- generate.data(m)
+  k <- length(m@clusters)
+  
+  n <- vector()
+  
+  for(i in 1:length(m@clusters)){
+    for(j in 1:length(m@clusters[[i]])){
+      if(length(m@clusters[[i]][[j]]) == 1)
+        n[i] <- m@clusters[[i]][[j]] 
+    }
+  }
+  
+  cu <- cumsum(n)
+  
+  if(k < 5) form <- c(2,2)
+  if(k > 4 && k < 10) form <- c(3,3)
+  if(k > 9 && k < 17) form <- c(4,4)
+  
+  
+  par(mfrow=c(form))
+  for(i in 1:k){
+    if(i == 1){
+      mat <- sapply(data[1:cu[i],], function(x) table(x))
+    } else {
+      mat <- sapply(data[(cu[i-1]+1):(cu[i]),], function(x) table(x))
+    }
+    p <- prop.table(mat, margin=2)
+    barplot(p, col = rainbow(2))
+  }
+})
+
 
 create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, codefile = TRUE){
   

@@ -135,5 +135,85 @@ function(m){
 })
 
 
+setMethod("generate.data", signature(m = "metadata.binary"),
+function(m){
 
+  require("MultiOrd")
+  
+  set.seed(m@seedinfo[[1]])
+  RNGversion(m@seedinfo[[2]])
+  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
+  samp <- get(m@dist)
+  total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
+  k <- length(m@clusters)
+  for(i in 1:length(m@clusters$c1)){
+    if(is.matrix(m@clusters$c1[[i]]))
+      vars <- ncol(m@clusters$c1[[i]])
+  }
+  
+  datamatrix <- matrix(0, nrow=total_n, ncol=vars)
+  
+  clus <- list()
+  for(i in 1:k){
+    clus[[i]] <- do.call(samp, m@clusters[[i]])
+  }
+  datamatrix <- do.call(rbind, clus)
+  
+  as.data.frame(datamatrix)
+})
+
+
+setMethod("generate.data", signature(m = "metadata.wordnet"),
+function(m){
+  set.seed(m@seedinfo[[1]])
+  RNGversion(m@seedinfo[[2]])
+  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
+  
+  require("wordnet")
+  
+  clus <- list()
+  for(i in 1:length(m@clusters)) {
+     filter <- getTermFilter(m@filtertype, m@clusters[[i]]$word, m@case_ignore)
+     terms <- getIndexTerms(m@clusters[[i]]$wordtype, m@clusters[[i]]$n, filter)
+     clus[[i]] <- sapply(terms, getLemma)
+  }
+  
+  data.frame(wordlist = unlist(clus))
+})
+
+
+setMethod("generate.data", signature(m = "metadata.randomstring"),
+function(m){
+  set.seed(m@seedinfo[[1]])
+  RNGversion(m@seedinfo[[2]])
+  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
+  
+  samp <- get(m@genfunc)
+  
+  require("stringdist")
+  
+  clus <- list()
+  for(i in 1:length(m@clusters)) {
+    clus[[i]] <- do.call(samp, m@clusters[[i]])
+  }
+  
+  data.frame(stringlist = unlist(clus))
+})
+
+
+
+get_randomstrings <- function(center, maxdist, length = 10, n = 10, method = "lv"){
+  l <- vector()
+  l[1:n] <- ""
+  for(i in 1:n){
+    while(TRUE){
+      str <- paste(sample(letters, length, T), collapse="")
+      if(stringdist(center, str, method) <= maxdist) {
+        l[i] <- str
+        break
+      }
+    }
+  }
+  return(l)
+}
 

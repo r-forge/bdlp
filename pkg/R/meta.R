@@ -1,4 +1,6 @@
 # metadata object definitions
+require("GenOrd")
+require("MultiOrd")
 
 setClass("metadata.common",
          representation(clusters = "list",
@@ -69,7 +71,7 @@ setClass("metadata.functional",
                         interval = "numeric",
                         sd = "numeric",
                         gridMatrix = "matrix",
-                        seed = "numeric",
+                        seedinfo = "list",
                         sd_distribution = "character",
                         regular = "logical"),
           validity = function(object){
@@ -87,7 +89,6 @@ setClass("metadata.functional",
                      },
           prototype = prototype(sd_distribution = "rnorm",
                                 sd = 0.2,
-                                seed = 100,
                                 minTimePoints = 2,
                                 maxTimePoints = 10,
                                 resolution = 100,
@@ -98,7 +99,7 @@ setClass("metadata.ordinal",
          contains = "metadata.common",
          validity = function(object){
                       retval = NULL
-                      if(!all(unlist(lapply(clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
+                      if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
                         retval <- "Nonconforming arguments found in slot 'clusters'"
                       retval
          },
@@ -109,18 +110,40 @@ setClass("metadata.binary",
          contains = "metadata.common",
          validity = function(object){
 			          retval = NULL
-			          if(!all(unlist(lapply(clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
+			          if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
                       retval <- "Nonconforming arguments found in slot 'clusters'"
                       retval
 	     },
-		 prototype = prototype(dist = "rmvbin"))
+		 prototype = prototype(dist = "generate.binary"))
 		 
 
-#setClass("metadata.mixed",
-#         contains = "metadata.common",
-#         validity = function(object){
-#			 
-#			 
-#		 },
-#		 prototype = prototype(
+setClass("metadata.randomstring",
+         representation = representation(clusters = "list",
+                           distancetype = "character",
+                           genfunc = "character",
+                           seedinfo = "list"),
+         validity = function(object){
+			          retval = NULL
+			          retval
+		 },
+		 prototype = prototype(distancetype = "lv",
+		                       genfunc = "get_randomstrings"))
+		 
+setClass("metadata.wordnet",
+         representation = representation(clusters = "list",
+                                         filtertype = "character",
+                                         case_ignore = "logical",
+                                         seedinfo = "list"),
+         validity = function(object){
+		              retval = NULL	 
+			          if(!any(object@filtertype == c("ContainsFilter", "EndsWithFilter", "StartsWithFilter",
+			                                  "RegexFilter", "SoundFilter", "ContainsFilter", "WildcardFilter",
+			                                  "ExactMatchFilter"))){
+				        retval <- "This filter type does not exist!"
+				      }
+			          retval                        
+		 },
+         prototype = prototype(case_ignore = TRUE))
+
+
 
