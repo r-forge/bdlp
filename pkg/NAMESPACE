@@ -1,4 +1,5 @@
-require(bindata)
+require(MultiOrd)
+require(GenOrd)
 require(MASS)
 
 export(create.dataset)
