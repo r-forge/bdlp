@@ -42,7 +42,7 @@ initialize.object <- function(type, k, distfunc, seed){
   clusters <- sapply(cl,function(x) NULL)
   clusters <- lapply(clusters, function(x) formals(distfunc))
   
-  new(type, clusters=clusters, seed=seed, dist=distfunc)
+  new(type, clusters=clusters, seedinfo=seed, dist=distfunc)
 
 }
 
@@ -54,9 +54,13 @@ save.setup <- function(name, author, mail, inst,
                        metaseedinfo = list(100, 
                                       paste(R.version$major, R.version$minor, sep = "."),
                                       RNGkind()), 
-                       custom_funcs = NULL, ...){
+                       custom_funcs = NULL, custom_name = NULL, ...){
 	
-	newname <- paste(strsplit(name, ".R")[[1]], ".R", sep="")
+	if(is.null(custom_name))
+	  newname <- paste(strsplit(name, ".R")[[1]], ".R", sep="")
+	else
+	  newname <- custom_name
+	  
 	funcname <- strsplit(name, ".R")[[1]]
 	file.create(newname)
 	
@@ -72,6 +76,8 @@ save.setup <- function(name, author, mail, inst,
 	cat(paste("  if(info == T) return(list(summary=infotable, reference=reference)) \n \n"), file = newname, append=T)
 	
 	objlength <- length(objects)
+	
+	cat("  if(is.null(metaseedinfo)) metaseedinfo <- seedinfo \n \n", file=newname, append=T)
 	
 	cat("  # For a specified seed and setnr, return the respective metadata object \n \n", file = newname, append=T)
 	cat(paste("  set.seed(", metaseedinfo[[1]], ") \n", sep=""), file = newname, append=T)
