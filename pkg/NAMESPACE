@@ -1,6 +1,4 @@
-require(MultiOrd)
-require(GenOrd)
-require(MASS)
+
 
 export(create.dataset)
 export(plot)
@@ -11,6 +9,7 @@ export(setupsummary)
 export(samplegrid)
 export(formatFunc)
 export(timesamples)
+export(save.setup)
 
 exportMethods(
     "generate.data",
