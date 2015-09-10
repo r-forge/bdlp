@@ -57,18 +57,20 @@ searchfunc <- function(author, year, keyword){
 }
 
 check.setup <- function(file){
+  flag = F  
 
-  cat("Sourcing input file ... ")
+  cat("Sourcing input file ... \n")
   tryCatch({
     source(file)
-    cat("Done.<br>")
+    cat("Done.\n")
   }, error = function(e) {
     suppressMessages(stop())
-    cat("Failed!<br>")
+    flag = T
+    cat("Failed!")
   })
   ##-----------------------
   
-  cat("Checking consistency of function names ... ")
+  cat("Checking consistency of function names ... \n")
   tryCatch({
     name <- strsplit(file, "/")
     name <- name[[1]][length(name[[1]])]
@@ -77,27 +79,29 @@ check.setup <- function(file){
       is.function(get(name)),
       regexpr(pattern = "[a-z]+[0-9]{4}", text=name) == T
     )
-    cat("Done.<br>")
+    cat("Done.\n")
   }, error = function(e) {
     suppressMessages(stop())
-    cat("Failed.<br>")
+    flag=T
+    cat("Failed.\n")
   })
   
   ##-----------------------
   
-  cat("Checking whether a summary is produced ... ")
+  cat("Checking whether a summary is produced ... \n")
   tryCatch({
     func <- get(name)
     s <- setupsummary(name)
     stopifnot(is.list(s))
-    cat("Done.<br>")
+    cat("Done.\n")
   }, error = function(e) {
-    cat("Failed.<br>")
+    flag=T
+    cat("Failed.\n")
   })
   
   ##-----------------------
   
-  cat("Checking whether metadata and datasets can be generated ... ")
+  cat("Checking whether metadata and datasets can be generated ... \n")
   tryCatch({
     func <- get(name)
     s <- setupsummary(name)
@@ -105,19 +109,22 @@ check.setup <- function(file){
     
     
     for(i in 1:runs){
-      meta <- func(setnr = i, seed = 1)
+      meta <- func(setnr = i)
       data <- generate.data(meta)
     }
-    cat("Done.<br>")
+    cat("Done.\n")
     #return(T)
   }, 
     error = function(e) {
     suppressMessages(stop())
-    cat("Failed!<br>")
+    flag=T
+    cat("Failed!\n")
   })
   ##-----------------------
-  cat("<p>Validity check successful ... upload completed. Setup available in library!")
-  updateLibrary(name)
+  
+  if(flag==F) cat("Validity check successful ... you can upload!\n")
+  else cat("Validity check unsuccessful ... please recheck your file!\n")
+  #updateLibrary(name)
 }
 
 
