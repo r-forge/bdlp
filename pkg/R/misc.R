@@ -57,17 +57,12 @@ searchfunc <- function(author, year, keyword){
 }
 
 check.setup <- function(file){
-  flag = F  
 
   cat("Sourcing input file ... \n")
-  tryCatch({
-    source(file)
-    cat("Done.\n")
-  }, error = function(e) {
-    suppressMessages(stop())
-    flag = T
-    cat("Failed!")
-  })
+  tryCatch({source(file); cat("Done.\n")}, 
+           warning = function(w) {stop("File not found!\n")}, 
+           error = function(e) {stop("Unsuccessful. Check stopped.\n")}
+           )
   ##-----------------------
   
   cat("Checking consistency of function names ... \n")
@@ -79,12 +74,20 @@ check.setup <- function(file){
       is.function(get(name)),
       regexpr(pattern = "[a-z]+[0-9]{4}", text=name) == T
     )
-    cat("Done.\n")
-  }, error = function(e) {
-    suppressMessages(stop())
-    flag=T
-    cat("Failed.\n")
-  })
+    cat("Done.\n")}, 
+    warning = function(w) {stop("Inconsistencies found.\n")},
+    error = function(e) {stop("Inconsistencies detected. Check stopped.\n")})
+  
+  ##-----------------------
+  
+  cat("Checking reference ... \n")
+  tryCatch({
+    unc <- get(name)
+    s <- setupsummary(name)
+    stopifnot(is.character(s$reference))
+    cat("Done.\n")}, 
+    warning = function(w) {stop("No reference.\n")},
+    error = function(e) {stop("No reference found. Check stopped.\n")})
   
   ##-----------------------
   
@@ -92,12 +95,11 @@ check.setup <- function(file){
   tryCatch({
     func <- get(name)
     s <- setupsummary(name)
-    stopifnot(is.list(s))
+    stopifnot(is.data.frame(s$summary))
     cat("Done.\n")
-  }, error = function(e) {
-    flag=T
-    cat("Failed.\n")
-  })
+  }, 
+  warning = function(w) {stop("No summary.\n")},
+  error = function(e) {stop("No summary output available. Check stopped.\n")})
   
   ##-----------------------
   
@@ -113,18 +115,12 @@ check.setup <- function(file){
       data <- generate.data(meta)
     }
     cat("Done.\n")
-    #return(T)
   }, 
-    error = function(e) {
-    suppressMessages(stop())
-    flag=T
-    cat("Failed!\n")
-  })
+    warning = function(w) {stop("No data.\n")},
+    error = function(e) {stop("Data generation failed. Check stopped.\n")})
   ##-----------------------
   
-  if(flag==F) cat("Validity check successful ... you can upload!\n")
-  else cat("Validity check unsuccessful ... please recheck your file!\n")
-  #updateLibrary(name)
+  cat("Check complete! You can upload your benchmarking setup!\n")
 }
 
 
