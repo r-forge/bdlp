@@ -239,7 +239,13 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
   d[4] <- paste("# ", inst, sep="")
   d[5] <- paste("# ", mail, sep="")
   
-  d[7] <- paste(newname, " <- function(setnr=NULL, seed=NULL, info=F){", sep="")
+  d[7] <- paste(newname, " <- function(setnr = NULL,
+                              seedinfo = list(100, 
+                                paste(R.version$major, R.version$minor, sep = '.'), RNGkind()), 
+                              info = FALSE, 
+                              metaseedinfo = list(100, 
+                                paste(R.version$major, R.version$minor, sep = '.'),
+                                RNGkind())){", sep="")
   
   l <- length(capture.output(dput(mat)))
   
@@ -259,26 +265,32 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
   d[11+l+6] <- "  # and create new metadata object"
   d[11+l+7] <- ""
   
-  if(type=="metric")
-    d[11+l+8] <- "  new(\"metadata.metric\", ...)"
-  if(type=="functional")
-    d[11+l+8] <- "  new(\"metadata.functional\", ...)"
-  if(type=="ordinal")
-    d[11+l+8] <- "  new(\"metadata.ordinal\", ...)"
+  d[11+l+8] <-  "  set.seed(metaseedinfo[[1]])"
+  d[11+l+9] <-  "  RNGversion(metaseedinfo[[2]])"
+  d[11+l+10] <- "  RNGkind(metaseedinfo[[3]][1], metaseedinfo[[3]][2])"
   
-  d[11+l+9] <- ""
-
-
-  
-  d[11+l+10] <- "}"
   d[11+l+11] <- ""
-  d[11+l+12] <- "#------------------------------------------------------------"
-  d[11+l+13] <- ""
-  d[11+l+14] <- "# add additional function that are needed"
-  d[11+l+15] <- "# during metadata generation here"
-  d[11+l+16] <- "# appropriate function name: "
   
-  d[11+l+16] <- paste(d[11+l+16], newname, "_myfunc()", sep="")
+  if(type=="metric")
+    d[11+l+12] <- "  new(\"metadata.metric\", ...)"
+  if(type=="functional")
+    d[11+l+12] <- "  new(\"metadata.functional\", ...)"
+  if(type=="ordinal")
+    d[11+l+12] <- "  new(\"metadata.ordinal\", ...)"
+  
+  d[11+l+13] <- ""
+
+
+  
+  d[11+l+14] <- "}"
+  d[11+l+15] <- ""
+  d[11+l+16] <- "#------------------------------------------------------------"
+  d[11+l+17] <- ""
+  d[11+l+18] <- "# add additional function that are needed"
+  d[11+l+19] <- "# during metadata generation here"
+  d[11+l+20] <- "# appropriate function name: "
+  
+  d[11+l+20] <- paste(d[11+l+20], newname, "_myfunc()", sep="")
   
   d[is.na(d)] <- ""
   

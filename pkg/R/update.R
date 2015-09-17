@@ -35,7 +35,15 @@ delete.cluster <- function(m, clnumber){
 
 
 
-initialize.object <- function(type, k, distfunc, seed){
+initialize.object <- function(type, k, distfunc, seed = list(100, 
+                                      paste(R.version$major, R.version$minor, sep = "."),
+                                      RNGkind())){
+  
+  if(type == "metric") type <- "metadata.metric"
+  if(type == "functional") type <- "metadata.functional"
+  if(type == "ordinal") type <- "metadata.ordinal"
+  if(type == "binary") type <- "metadata.binary"
+  if(type == "randomstring") type <- "metadata.randomstring"
   
   cl <- paste("cl", 1:k, sep="")
   clusters <- list()
