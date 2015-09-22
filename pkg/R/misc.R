@@ -277,6 +277,10 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
     d[11+l+12] <- "  new(\"metadata.functional\", ...)"
   if(type=="ordinal")
     d[11+l+12] <- "  new(\"metadata.ordinal\", ...)"
+  if(type=="binary")
+    d[11+l+12] <- "  new(\"metadata.binary\", ...)"
+  if(type=="randomstring")
+    d[11+l+12] <- "  new(\"metadata.randomstring\", ...)"
   
   d[11+l+13] <- ""
 
