@@ -318,6 +318,12 @@ read.metadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
       do.call(name, list(setnr=setnr, seedinfo=seedinfo, metaseedinfo=metaseedinfo))
 }
 
+#' Returns the setup summary
+#'
+#' @param name The name of the setup
+#' @return The summary table of \code{name}
+#' @examples
+#' setupsummary(dangl2014)
 setupsummary <- function(name) {
   d <- do.call(name, list(info=T))
   rows <- nrow(d$summary)
