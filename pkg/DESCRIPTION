@@ -10,3 +10,4 @@ Description: contains the data generating function required to process the
 License: GPL
 Depends:
     methods
+RoxygenNote: 5.0.1
