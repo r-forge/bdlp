@@ -54,6 +54,32 @@ initialize.object <- function(type, k, distfunc, seed = list(100,
 
 }
 
+#' Saves a list of metadata objects to an new setup file
+#'
+#' @param name The name of the new setup (and thus also the filename)
+#' @param author Full name of the author
+#' @param mail Contact e-mail address of the author
+#' @param inst Institution of the author
+#' @param cit Reference to the publication where the setup was used, defaults to unpublished
+#' @param objects List of metadata objects
+#' @param table Info table for the setup
+#' @param seedinfo Random number generator parameters for the data sets
+#' @param metaseedinfo Random number generator parameters for the metadata
+#' @param custom_funcs Custom functions that are needed to generate the meta(data)
+#' @param custom_name Custom filename that deviates from the authorYear format
+#' @return A .R file that can be processed by \code{create.dataset}
+#' @examples
+#' a = new("metadata.metric", 
+#'         clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
+#'                         c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
+#'                         dist = "mvrnorm")
+#' b = new("metadata.metric", 
+#'         clusters = list(c1 = list(n = 44, mu = c(1,2), Sigma=diag(1,2)),
+#'                         c2 = list(n = 66, mu = c(-5,-6), Sigma=diag(1,2))),
+#'                         dist = "mvrnorm")
+#' save.setup(name="test2002.R", author="Mister Twister", mail="mister.twister@edu.com",
+#'            inst="Twister University", cit="Simple Data, pp. 23-24", objects=list(a, b),
+#'            table=data.frame(n = c(50, 110), k = c(2,2), shape = c("spherical", "spherical")))  
 save.setup <- function(name, author, mail, inst, 
                        cit = "Unpublished", objects, table, 
                        seedinfo = list(100, 
