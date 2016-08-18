@@ -2,6 +2,11 @@
 require("GenOrd")
 require("MultiOrd")
 
+#' A class to represent a metadata object
+#'
+#' @field clusters A list of cluster information
+#' @field dist  A string specifying a distribution for the random numbers
+#' @field seedinfo A list with the parameters for the random number generator
 setClass("metadata.common",
          representation(clusters = "list",
                         dist = "character",
