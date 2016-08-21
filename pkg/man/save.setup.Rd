@@ -2,7 +2,7 @@
 % Please edit documentation in R/update.R
 \name{save.setup}
 \alias{save.setup}
-\title{Saves a list of metadata objects to an new setup file}
+\title{Saves a list of metadata objects to a new setup file}
 \usage{
 save.setup(name, author, mail, inst, cit = "Unpublished", objects, table,
   seedinfo = list(100, paste(R.version$major, R.version$minor, sep = "."),
@@ -36,7 +36,7 @@ save.setup(name, author, mail, inst, cit = "Unpublished", objects, table,
 A .R file that can be processed by \code{create.dataset}
 }
 \description{
-Saves a list of metadata objects to an new setup file
+Saves a list of metadata objects to a new setup file
 }
 \examples{
 a = new("metadata.metric", 

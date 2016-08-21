@@ -34,7 +34,16 @@ delete.cluster <- function(m, clnumber){
 }
 
 
-
+#' Initialize a new metadata object
+#'
+#' @param type The data type for the new object
+#' @param k Number of clusters
+#' @param distfunc The distribution function for data generation
+#' @param seed The random number seed parameters for the data generation
+#' @return A metadata object
+#' @examples
+#' initialize.object(type = "metric", k = 3, distfunc = "mvrnorm")
+#' @export
 initialize.object <- function(type, k, distfunc, seed = list(100, 
                                       paste(R.version$major, R.version$minor, sep = "."),
                                       RNGkind())){
@@ -54,7 +63,7 @@ initialize.object <- function(type, k, distfunc, seed = list(100,
 
 }
 
-#' Saves a list of metadata objects to an new setup file
+#' Saves a list of metadata objects to a new setup file
 #'
 #' @param name The name of the new setup (and thus also the filename)
 #' @param author Full name of the author
@@ -80,6 +89,7 @@ initialize.object <- function(type, k, distfunc, seed = list(100,
 #' save.setup(name="test2002.R", author="Mister Twister", mail="mister.twister@edu.com",
 #'            inst="Twister University", cit="Simple Data, pp. 23-24", objects=list(a, b),
 #'            table=data.frame(n = c(50, 110), k = c(2,2), shape = c("spherical", "spherical")))  
+#' @export
 save.setup <- function(name, author, mail, inst, 
                        cit = "Unpublished", objects, table, 
                        seedinfo = list(100, 

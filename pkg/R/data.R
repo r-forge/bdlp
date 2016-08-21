@@ -1,17 +1,30 @@
-## main function to create a dataset
-
-create.dataset <- function(name, setnr = NULL, draws = 1,  
+#' Generates a number of datasets from one metadata scenario
+#'
+#' @param name The path to the setup file
+#' @param setnr The metadata scenario, as taken from the info table
+#' @param draws The number of datasets that are drawn from the metadata scenario
+#' @param seedinfo The random number generator seed parameters
+#' @param metaseedinfo If necessary, a separate set of random number generator parameters for the metadata (e.g. cluster centers)
+#' @param file A custom file name for the output database. Defaults to the pattern setupname_setnr_seed.db
+#' @param increment The random number seed will increase by 1 for each draw from the base seed given in seedinfo
+#' @return An SQLite database that contains the desired number of data sets drawn from a certain metadata scenario
+#' @examples
+#' create.dataset(name="dangl2014.R", setnr=1, draws=10)
+#' @export
+create.dataset <- function(name = NULL, setnr = NULL, draws = 1,  
                            seedinfo = list(100, 
                                            paste(R.version$major, R.version$minor, sep = "."),
                                            RNGkind()), 
                            metaseedinfo = list(100, 
                                            paste(R.version$major, R.version$minor, sep = "."),
                                            RNGkind()),
-                           newsetup = NULL, file = NULL, increment = T){
+                           file = NULL, increment = T){
 
-  #if(!is.null(rng)) RNGkind(rng[1], rng[2])
-  #if(!is.null(rv)) RNGversion(rv)
-  if(!is.null(newsetup)) source(newsetup)
+  if(!is.null(name)) source(name)
+  spl <- strsplit(name, "/")
+  spl <- unlist(spl)
+  name <- spl[length(spl)]
+  name <- unlist(strsplit(name, ".R"))
   
   pb <- txtProgressBar(min = 0, max = draws, style = 3)
 
@@ -38,9 +51,16 @@ create.dataset <- function(name, setnr = NULL, draws = 1,
   cat(paste("Base seed ", seedinfo[[1]]-draws, " was used and is included in filename.\n", sep=""))
 }
 
-## actual data generators
 
-setGeneric("generate.data", function(m) standardGeneric("generate.data"))
+#' Generate a dataset from a metadata object
+#'
+#' @param m A metadata object
+#' @return A dataset as specified by the metadata object
+#' @examples
+#' m <- dangl2014(setnr=1)
+#' generate.data(m)
+#' @export
+setGeneric("generate.data", function(m) {standardGeneric("generate.data")})
 
 setMethod("generate.data", signature(m = "metadata.metric"),
 function(m){
@@ -200,9 +220,18 @@ function(m){
   data.frame(stringlist = unlist(clus))
 })
 
-
-
-get_randomstrings <- function(center, maxdist, length = 10, n = 10, method = "lv"){
+#' Generates random strings
+#'
+#' @param center Reference string, i.e. the cluster center
+#' @param maxdist The maximum allowed string distance
+#' @param length The length of the string
+#' @param n Number of strings to be generated
+#' @param method The string distance method used to calculate the string, defaults to Levensthein distance
+#' @return A character string
+#' @examples
+#' get_randomstrings(center="hello", maxdist = 2, n = 5)
+#' @export
+get_randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(center), n = 1, method = "lv"){
   l <- vector()
   l[1:n] <- ""
   for(i in 1:n){
@@ -216,4 +245,15 @@ get_randomstrings <- function(center, maxdist, length = 10, n = 10, method = "lv
   }
   return(l)
 }
+
+writeToDatabase <- function(output, dbname, draw){
+  require(RSQLite)
+  driver <- dbDriver("SQLite")
+  con <- dbConnect(driver, dbname)
+  if(draw == 1)
+    dbWriteTable(con, paste("draw", draw, sep="_"), output, row.names=FALSE)
+  else
+    dbWriteTable(con, paste("draw", draw, sep="_"), output, append=T, row.names=FALSE)
+}
+
 

@@ -1,15 +1,5 @@
 # misc functions 
 
-writeToDatabase <- function(output, dbname, draw){
-  require(RSQLite)
-  driver <- dbDriver("SQLite")
-  con <- dbConnect(driver, dbname)
-  if(draw == 1)
-    dbWriteTable(con, paste("draw", draw, sep="_"), output, row.names=FALSE)
-  else
-    dbWriteTable(con, paste("draw", draw, sep="_"), output, append=T, row.names=FALSE)
-}
-
 list.setups <- function(){
   lib <- read.csv("data/library.csv")
   for(i in 1:nrow(lib)){
@@ -133,21 +123,36 @@ updateLibrary <- function(name){
   write.csv(newlib, file = "data/library.csv",row.names=F)
 }
 
-setGeneric("plot", function(m, option) standardGeneric("plot"))
- 
-setMethod("plot", signature(m = "metadata.metric", option = "numeric"),
-function(m, option){
+#' Plot a metadata object
+#' 
+#' @param m A metadata object
+#' @param option Only for metric data - 3d instead of 2d plot
+#' @return A plot, created by generating an instance of the dataset from the metadata object
+#' @examples
+#' m <- dangl2014(1)
+#' plot.metadata(m)
+#' @export
+setGeneric("plot.metadata", function(m, option) {standardGeneric("plot.metadata")})
+
+setMethod("plot.metadata", signature(m = "metadata.metric", option = "character"),
+function(m, option = "2d"){
   options(rgl.useNULL=TRUE)
   require(rgl)
   data <- generate.data(m)
-  pr <- prcomp(data)
-  prpred <- predict(pr, data)
   mems <- unlist(lapply(m@clusters, function(x) x$n))
   mems <- rep(1:length(m@clusters), mems)
-  if(option == 1) plot.default(prpred[,1:2], col=mems) else plot3d(prpred[,1:3], col=mems)
+  pr <- prcomp(data)
+  prpred <- predict(pr, data)
+  if(ncol(data) == 2) {
+    plot.default(data, col= mems)
+  } else if(ncol(data) == 3 && option == "3d"){
+	plot3d(prpred[,1:3], col=mems)
+  } else{
+    plot.default(prpred[,1:2], col=mems) 
+  }
 })
 
-setMethod("plot", signature(m = "metadata.functional"),
+setMethod("plot.metadata", signature(m = "metadata.functional"),
 function(m){
   data <- generate.data(m)
   ppf <- rowSums(m@gridMatrix)
@@ -157,7 +162,7 @@ function(m){
   }
 })
 
-setMethod("plot", signature(m = "metadata.ordinal"),
+setMethod("plot.metadata", signature(m = "metadata.ordinal"),
 function(m){
   data <- generate.data(m)
   k <- length(m@clusters)
@@ -190,7 +195,7 @@ function(m){
   }
 })
 
-setMethod("plot", signature(m = "metadata.binary"),
+setMethod("plot.metadata", signature(m = "metadata.binary"),
 function(m){
   data <- generate.data(m)
   k <- length(m@clusters)
@@ -324,6 +329,7 @@ read.metadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
 #' @return The summary table of \code{name}
 #' @examples
 #' setupsummary(dangl2014)
+#' @export
 setupsummary <- function(name) {
   d <- do.call(name, list(info=T))
   rows <- nrow(d$summary)
