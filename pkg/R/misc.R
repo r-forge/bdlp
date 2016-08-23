@@ -1,51 +1,9 @@
-# misc functions 
-
-list.setups <- function(){
-  lib <- read.csv("data/library.csv")
-  for(i in 1:nrow(lib)){
-    source(paste("data/", lib[i,2], ".R", sep=""))
-  }
-  lib
-}
-
-searchfunc <- function(author, year, keyword){
-
-  setupnames <- as.character(list.setups()[,2])
-  results <- list()
-  citationlist <- list()
-
-  search <- c(author, year, keyword)
-  args <- which(search != "")
-  
-  for(i in 1:length(setupnames)){
-   func <- get(setupnames[i])
-   citationlist[[i]] <- func(info=T)$reference 
-  }
-  
-  if(length(args) == 1){
-    for(i in 1:length(citationlist)){
-      if(grepl(search[args], citationlist[[i]], ignore.case=T)){
-        results[[i]] <- citationlist[[i]] 
-      }
-    }
-  }
-  if(length(args) == 2){
-    for(i in 1:length(citationlist)){
-      if(grepl(search[args[1]], citationlist[[i]], ignore.case=T) && grepl(search[args[2]], citationlist[[i]], ignore.case=T)){
-        results[[i]] <- citationlist[[i]] 
-      }
-    }    
-  }
-  if(length(args) == 3){
-    for(i in 1:length(citationlist)){
-      if(grepl(search[args[1]], citationlist[[i]], ignore.case=T) && grepl(search[args[2]], citationlist[[i]], ignore.case=T) && grepl(search[args[3]], citationlist[[i]], ignore.case=T)){
-        results[[i]] <- citationlist[[i]] 
-      }
-    } 
-  }
-  data.frame(Results=unlist(results))
-}
-
+#' Performs various consistency checks on a setup file
+#'
+#' @param file A .R file with a new simulation setup
+#' @examples
+#' check.setup("dangl2014.R")
+#' @export
 check.setup <- function(file){
 
   cat("Sourcing input file ... \n")
@@ -73,7 +31,7 @@ check.setup <- function(file){
   cat("Checking reference ... \n")
   tryCatch({
     unc <- get(name)
-    s <- setupsummary(name)
+    s <- summarize.setup(name)
     stopifnot(is.character(s$reference))
     cat("Done.\n")}, 
     warning = function(w) {stop("No reference.\n")},
@@ -84,7 +42,7 @@ check.setup <- function(file){
   cat("Checking whether a summary is produced ... \n")
   tryCatch({
     func <- get(name)
-    s <- setupsummary(name)
+    s <- summarize.setup(name)
     stopifnot(is.data.frame(s$summary))
     cat("Done.\n")
   }, 
@@ -96,7 +54,7 @@ check.setup <- function(file){
   cat("Checking whether metadata and datasets can be generated ... \n")
   tryCatch({
     func <- get(name)
-    s <- setupsummary(name)
+    s <- summarize.setup(name)
     runs <- nrow(s$summary)  
     
     
@@ -113,16 +71,6 @@ check.setup <- function(file){
   cat("Check complete! You can upload your benchmarking setup!\n")
 }
 
-
-updateLibrary <- function(name){
-  func <- get(name)
-  m <- func(1)
-  type <- strsplit(class(m)[1], "metadata.")[[1]][2]
-  lib <- read.csv("data/library.csv")
-  newlib <- rbind(lib, data.frame(type=type, name=name))
-  write.csv(newlib, file = "data/library.csv",row.names=F)
-}
-
 #' Plot a metadata object
 #' 
 #' @param m A metadata object
@@ -132,10 +80,10 @@ updateLibrary <- function(name){
 #' m <- dangl2014(1)
 #' plot.metadata(m)
 #' @export
-setGeneric("plot.metadata", function(m, option) {standardGeneric("plot.metadata")})
+setGeneric("plot.metadata", function(m, option = "2d") {standardGeneric("plot.metadata")})
 
-setMethod("plot.metadata", signature(m = "metadata.metric", option = "character"),
-function(m, option = "2d"){
+setMethod("plot.metadata", signature(m = "metadata.metric"),
+function(m, option){
   options(rgl.useNULL=TRUE)
   require(rgl)
   data <- generate.data(m)
@@ -228,8 +176,19 @@ function(m){
   }
 })
 
-
-create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, codefile = TRUE){
+#' Create a new setup file template
+#' 
+#' @param newname The name of the new setup (and subsequently the file name)
+#' @param mail The contact e-mail address of the author
+#' @param author The full name of the author
+#' @param inst The institution of the author
+#' @param type The data type of this setup
+#' @param infotable The setup summary table
+#' @param ref The reference to the publication where the setup was used
+#' @param codefile If functions that are needed for the data generation of the setup are stored in some other .R file, the path can be supplied
+create.fileskeleton <- function(newname, mail, inst, author, 
+                                type = c("metric", "functional", "ordinal", "binary", "randomstring", "wordnet"), 
+                                infotable = NULL, ref = "Unpublished", codefile = F){
   
   if(codefile == TRUE) {
     filename <- paste(newname,".R", sep="")
@@ -252,17 +211,17 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
                                 paste(R.version$major, R.version$minor, sep = '.'),
                                 RNGkind())){", sep="")
   
-  l <- length(capture.output(dput(mat)))
+  l <- length(capture.output(dput(infotable)))
   
   d[9] <- "  # setup info table"
   
-  d[11:(11+l-1)] <- capture.output(dput(mat))
+  d[11:(11+l-1)] <- capture.output(dput(infotable))
   
   d[11] <- paste("infotable <- ", d[11], sep="") 
   for(i in 1:l) d[11+i-1] <- paste("  ", d[11+i-1], sep="")
   
   
-  d[11+l+1] <- paste("  reference <- ", "\"", as.character(cit), "\"", sep="")
+  d[11+l+1] <- paste("  reference <- ", "\"", as.character(ref), "\"", sep="")
   
   d[11+l+3] <- "  if(info==T) return(list(summary=infotable, reference=reference))"
   
@@ -286,7 +245,8 @@ create.fileskeleton <- function(newname, mail, inst, author, type, mat, cit, cod
     d[11+l+12] <- "  new(\"metadata.binary\", ...)"
   if(type=="randomstring")
     d[11+l+12] <- "  new(\"metadata.randomstring\", ...)"
-  
+  if(type=="wordnet")
+    d[11+l+12] <- "  new(\"metadata.wordnet\", ...)"
   d[11+l+13] <- ""
 
 
@@ -328,9 +288,9 @@ read.metadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
 #' @param name The name of the setup
 #' @return The summary table of \code{name}
 #' @examples
-#' setupsummary(dangl2014)
+#' summarize.setup(dangl2014)
 #' @export
-setupsummary <- function(name) {
+summarize.setup <- function(name) {
   d <- do.call(name, list(info=T))
   rows <- nrow(d$summary)
   d$summary <- cbind(setnr = 1:rows, d$summary)

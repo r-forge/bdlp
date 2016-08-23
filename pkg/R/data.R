@@ -41,7 +41,7 @@ create.dataset <- function(name = NULL, setnr = NULL, draws = 1,
     if(increment == T) seedinfo[[1]] <- seedinfo[[1]] + 1
     metadata <- read.metadata(name = name, setnr = setnr, seedinfo = seedinfo, metaseedinfo = metaseedinfo)
     output <- generate.data(metadata)
-    writeToDatabase(output, dbname, i) 
+    write.Database(output, dbname, i) 
     Sys.sleep(0.1)
     setTxtProgressBar(pb, i)
   }
@@ -229,9 +229,9 @@ function(m){
 #' @param method The string distance method used to calculate the string, defaults to Levensthein distance
 #' @return A character string
 #' @examples
-#' get_randomstrings(center="hello", maxdist = 2, n = 5)
+#' get.randomstrings(center="hello", maxdist = 2, n = 5)
 #' @export
-get_randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(center), n = 1, method = "lv"){
+get.randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(center), n = 1, method = "lv"){
   l <- vector()
   l[1:n] <- ""
   for(i in 1:n){
@@ -246,7 +246,7 @@ get_randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(cent
   return(l)
 }
 
-writeToDatabase <- function(output, dbname, draw){
+write.Database <- function(output, dbname, draw){
   require(RSQLite)
   driver <- dbDriver("SQLite")
   con <- dbConnect(driver, dbname)
