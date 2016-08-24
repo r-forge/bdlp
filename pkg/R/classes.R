@@ -1,6 +1,3 @@
-require("GenOrd")
-require("MultiOrd")
-
 #' A class to represent a metadata object
 #'
 #' @field clusters A list of cluster information
@@ -9,7 +6,7 @@ require("MultiOrd")
 #' @export
 setClass("metadata.general",
          representation(clusters = "list",
-                        dist = "character",
+                        dist = "function",
                         seedinfo = "list"),
 #                        vars = "numeric",
 #                        total_n = "numeric",
@@ -28,7 +25,7 @@ setClass("metadata.general",
 #                        retval <- "Number of list entries in slot 'clusters' and number of actual cluster do not match"
                       #checking whether all cluster metadata arguments are valid arguments for the data generating function
                       for(i in 1:length(object@clusters)) {
-                        if(!all(names(object@clusters[[i]]) %in% names(formals(get(object@dist))))){
+                        if(!all(names(object@clusters[[i]]) %in% names(formals(object@dist)))){
                           retval <- "Distribution function arguments and cluster metadata names do not match" 
                         }
                       }
@@ -69,7 +66,7 @@ setClass("metadata.metric",
                     retval
                     },
          prototype = prototype(standardization = "NONE",
-                   dist = "mvrnorm"))
+                   dist = MASS::mvrnorm))
 
 #' A class that represents a metadata object for functional data
 #' @export           
@@ -111,11 +108,11 @@ setClass("metadata.ordinal",
          contains = "metadata.general",
          validity = function(object){
                       retval = NULL
-                      if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
+                      if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(object@dist))))))
                         retval <- "Nonconforming arguments found in slot 'clusters'"
                       retval
          },
-         prototype = prototype(dist = "ordsample"))
+         prototype = prototype(dist = GenOrd::ordsample))
          
 #' A class that represents a metadata object for binary data
 #' @export          
@@ -123,43 +120,43 @@ setClass("metadata.binary",
          contains = "metadata.general",
          validity = function(object){
 			          retval = NULL
-			          if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(get(object@dist)))))))
+			          if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(object@dist))))))
                       retval <- "Nonconforming arguments found in slot 'clusters'"
                       retval
 	     },
-		 prototype = prototype(dist = "generate.binary"))
+		 prototype = prototype(dist = MultiOrd::generate.binary))
 		 
 #' A class that represents a metadata object for string data
 #' @export 
 setClass("metadata.randomstring",
          representation = representation(clusters = "list",
                            distancetype = "character",
-                           genfunc = "character",
+                           genfunc = "function",
                            seedinfo = "list"),
          validity = function(object){
 			          retval = NULL
 			          retval
 		 },
 		 prototype = prototype(distancetype = "lv",
-		                       genfunc = "get.randomstrings"))
+		                       genfunc = get.randomstrings <- function(){}))
 
-#' A class that represents a metadata object for wordnet data
-#' @export 		 
-setClass("metadata.wordnet",
-         representation = representation(clusters = "list",
-                                         filtertype = "character",
-                                         case_ignore = "logical",
-                                         seedinfo = "list"),
-         validity = function(object){
-		              retval = NULL	 
-			          if(!any(object@filtertype == c("ContainsFilter", "EndsWithFilter", "StartsWithFilter",
-			                                  "RegexFilter", "SoundFilter", "ContainsFilter", "WildcardFilter",
-			                                  "ExactMatchFilter"))){
-				        retval <- "This filter type does not exist!"
-				      }
-			          retval                        
-		 },
-         prototype = prototype(case_ignore = TRUE))
+# A class that represents a metadata object for wordnet data
+# @export 		 
+#setClass("metadata.wordnet",
+#         representation = representation(clusters = "list",
+#                                         filtertype = "character",
+#                                         case_ignore = "logical",
+#                                         seedinfo = "list"),
+#         validity = function(object){
+#		              retval = NULL	 
+#			          if(!any(object@filtertype == c("ContainsFilter", "EndsWithFilter", "StartsWithFilter",
+#			                                  "RegexFilter", "SoundFilter", "ContainsFilter", "WildcardFilter",
+#			                                  "ExactMatchFilter"))){
+#				        retval <- "This filter type does not exist!"
+#				      }
+#			          retval                        
+#		 },
+#         prototype = prototype(case_ignore = TRUE))
 
 
 

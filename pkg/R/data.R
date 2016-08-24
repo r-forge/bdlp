@@ -8,8 +8,8 @@
 #' @param file A custom file name for the output database. Defaults to the pattern setupname_setnr_seed.db
 #' @param increment The random number seed will increase by 1 for each draw from the base seed given in seedinfo
 #' @return An SQLite database that contains the desired number of data sets drawn from a certain metadata scenario
-#' @examples
-#' create.dataset(name="dangl2014.R", setnr=1, draws=10)
+# @examples
+# create.dataset(name="dangl2014.R", setnr=1, draws=10)
 #' @export
 create.dataset <- function(name = NULL, setnr = NULL, draws = 1,  
                            seedinfo = list(100, 
@@ -57,11 +57,19 @@ create.dataset <- function(name = NULL, setnr = NULL, draws = 1,
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @examples
-#' m <- dangl2014(setnr=1)
+#' m <- new("metadata.metric", 
+#'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
+#'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
+#'          dist = mvrnorm)
 #' generate.data(m)
 #' @export
 setGeneric("generate.data", function(m) {standardGeneric("generate.data")})
 
+#' Generate a dataset from a metadata object
+#'
+#' @param m A metadata object
+#' @return A dataset as specified by the metadata object
+#' @export
 setMethod("generate.data", signature(m = "metadata.metric"),
 function(m){
 	
@@ -78,7 +86,7 @@ function(m){
       vars <- ncol(m@clusters[[1]][[i]])
   }
   
-  samp <- get(m@dist)
+  samp <- m@dist
   
   datamatrix <- matrix(0, nrow=total_n, ncol=vars)
   
@@ -96,6 +104,11 @@ function(m){
   }
 })
 
+#' Generate a dataset from a metadata object
+#'
+#' @param m A metadata object
+#' @return A dataset as specified by the metadata object
+#' @export
 setMethod("generate.data", signature(m = "metadata.functional"), 
 function(m){
   
@@ -127,15 +140,18 @@ function(m){
   as.data.frame(data)
 })
 
+#' Generate a dataset from a metadata object
+#'
+#' @param m A metadata object
+#' @return A dataset as specified by the metadata object
+#' @export
 setMethod("generate.data", signature(m = "metadata.ordinal"),
 function(m){
-
-  require("GenOrd")
   
   set.seed(m@seedinfo[[1]])
   RNGversion(m@seedinfo[[2]])
   RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
-  samp <- get(m@dist)
+  samp <- m@dist
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
   for(i in 1:length(m@clusters$c1)){
@@ -154,16 +170,18 @@ function(m){
   as.data.frame(datamatrix)
 })
 
-
+#' Generate a dataset from a metadata object
+#'
+#' @param m A metadata object
+#' @return A dataset as specified by the metadata object
+#' @export
 setMethod("generate.data", signature(m = "metadata.binary"),
 function(m){
-
-  require("MultiOrd")
   
   set.seed(m@seedinfo[[1]])
   RNGversion(m@seedinfo[[2]])
   RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
-  samp <- get(m@dist)
+  samp <- m@dist
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
   for(i in 1:length(m@clusters$c1)){
@@ -183,34 +201,36 @@ function(m){
 })
 
 
-setMethod("generate.data", signature(m = "metadata.wordnet"),
-function(m){
-  set.seed(m@seedinfo[[1]])
-  RNGversion(m@seedinfo[[2]])
-  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
-  
-  require("wordnet")
-  
-  clus <- list()
-  for(i in 1:length(m@clusters)) {
-     filter <- getTermFilter(m@filtertype, m@clusters[[i]]$word, m@case_ignore)
-     terms <- getIndexTerms(m@clusters[[i]]$wordtype, m@clusters[[i]]$n, filter)
-     clus[[i]] <- sapply(terms, getLemma)
-  }
-  
-  data.frame(wordlist = unlist(clus))
-})
+#setMethod("generate.data", signature(m = "metadata.wordnet"),
+#function(m){
+#  set.seed(m@seedinfo[[1]])
+#  RNGversion(m@seedinfo[[2]])
+#  RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
+#  
+#  require("wordnet")
+#  
+#  clus <- list()
+#  for(i in 1:length(m@clusters)) {
+#     filter <- getTermFilter(m@filtertype, m@clusters[[i]]$word, m@case_ignore)
+#     terms <- getIndexTerms(m@clusters[[i]]$wordtype, m@clusters[[i]]$n, filter)
+#     clus[[i]] <- sapply(terms, getLemma)
+#  }
+#  
+#  data.frame(wordlist = unlist(clus))
+#})
 
-
+#' Generate a dataset from a metadata object
+#'
+#' @param m A metadata object
+#' @return A dataset as specified by the metadata object
+#' @export
 setMethod("generate.data", signature(m = "metadata.randomstring"),
 function(m){
   set.seed(m@seedinfo[[1]])
   RNGversion(m@seedinfo[[2]])
   RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
   
-  samp <- get(m@genfunc)
-  
-  require("stringdist")
+  samp <- m@genfunc
   
   clus <- list()
   for(i in 1:length(m@clusters)) {
@@ -237,7 +257,7 @@ get.randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(cent
   for(i in 1:n){
     while(TRUE){
       str <- paste(sample(letters, length, T), collapse="")
-      if(stringdist(center, str, method) <= maxdist) {
+      if(stringdist::stringdist(center, str, method) <= maxdist) {
         l[i] <- str
         break
       }
@@ -247,7 +267,6 @@ get.randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(cent
 }
 
 write.Database <- function(output, dbname, draw){
-  require(RSQLite)
   driver <- dbDriver("SQLite")
   con <- dbConnect(driver, dbname)
   if(draw == 1)

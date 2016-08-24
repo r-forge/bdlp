@@ -23,13 +23,13 @@ if(setnr == 1) {
   return(new("metadata.metric", 
     clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
                     c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-    dist = "mvrnorm", seedinfo = seedinfo))
+    dist = mvrnorm, seedinfo = seedinfo))
 }
 if(setnr == 2){
   return(new("metadata.metric", 
     clusters = list(c1 = list(n = 20, mu = c(0,2), Sigma=diag(1,2)),
                     c2 = list(n = 20, mu = c(-1,-2), Sigma=diag(1,2))),
-    dist = "mvrnorm", seedinfo = seedinfo))
+    dist = mvrnorm, seedinfo = seedinfo))
 }
 
 }

@@ -30,7 +30,4 @@ An SQLite database that contains the desired number of data sets drawn from a ce
 \description{
 Generates a number of datasets from one metadata scenario
 }
-\examples{
-create.dataset(name="dangl2014.R", setnr=1, draws=10)
-}
 

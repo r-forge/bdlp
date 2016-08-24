@@ -1,31 +1,33 @@
-## modify metadata objects
-
-update.metadata <- function(m, ...){
-  args <- c(as.list(environment()), list(...))
-  objname <- args$m
-  a <- names(args)
-  
-  args <- args[!a == "m"]
-  a <- a[!grepl("m", a)]
-  
-  if(all(a %in% slotNames(m))){
-    for(i in 1:length(args)){
-      slot(m, a[i]) <- args[[i]] 
-    }
-  } else {
-    wrong <- a[!(a %in% slotNames(m))]
-    print(paste("Argument", wrong, "not defined in the metadata object!", sep= " "))
-  }
-  return(m)
-}
-
-add.cluster <- function(m, ...){
+#' Add an empty cluster to a metadata object
+#'
+#' @param m A metadata object
+#' @return A metadata object with an empty additional cluster
+#' @examples
+#' m <- new("metadata.metric", 
+#'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
+#'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
+#'          dist = mvrnorm)
+#' m2 <- add.cluster(m)
+#' @export
+add.cluster <- function(m){
   prev <- length(m@clusters)
   new <- paste("cl", prev + 1, sep="")
   eval(parse(text=(paste("m@clusters$", new, " <- formals(m@dist)", sep=""))))
   return(m)
 }
 
+#' Delete a cluster from a metadata object
+#'
+#' @param m A metadata object
+#' @param clnumber The cluster to delete
+#' @return A metadata object
+#' @examples
+#' m <- new("metadata.metric", 
+#'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
+#'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
+#'          dist = mvrnorm)
+#' m2 <- delete.cluster(m, 2)
+#' @export
 delete.cluster <- function(m, clnumber){
   m@clusters <- m@clusters[-clnumber]
   l <- length(names(m@clusters))
@@ -42,7 +44,7 @@ delete.cluster <- function(m, clnumber){
 #' @param seed The random number seed parameters for the data generation
 #' @return A metadata object
 #' @examples
-#' initialize.object(type = "metric", k = 3, distfunc = "mvrnorm")
+#' initialize.object(type = "metric", k = 3, distfunc = mvrnorm)
 #' @export
 initialize.object <- function(type, k, distfunc, seed = list(100, 
                                       paste(R.version$major, R.version$minor, sep = "."),
@@ -81,11 +83,11 @@ initialize.object <- function(type, k, distfunc, seed = list(100,
 #' a = new("metadata.metric", 
 #'         clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
 #'                         c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-#'                         dist = "mvrnorm")
+#'                         dist = mvrnorm)
 #' b = new("metadata.metric", 
 #'         clusters = list(c1 = list(n = 44, mu = c(1,2), Sigma=diag(1,2)),
 #'                         c2 = list(n = 66, mu = c(-5,-6), Sigma=diag(1,2))),
-#'                         dist = "mvrnorm")
+#'                         dist = mvrnorm)
 #' save.setup(name="test2002.R", author="Mister Twister", mail="mister.twister@edu.com",
 #'            inst="Twister University", cit="Simple Data, pp. 23-24", objects=list(a, b),
 #'            table=data.frame(n = c(50, 110), k = c(2,2), shape = c("spherical", "spherical")))  
@@ -98,7 +100,7 @@ save.setup <- function(name, author, mail, inst,
                        metaseedinfo = list(100, 
                                       paste(R.version$major, R.version$minor, sep = "."),
                                       RNGkind()), 
-                       custom_funcs = NULL, custom_name = NULL, ...){
+                       custom_funcs = NULL, custom_name = NULL){
 	
 	if(is.null(custom_name))
 	  newname <- paste(strsplit(name, ".R")[[1]], ".R", sep="")

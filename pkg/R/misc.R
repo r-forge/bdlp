@@ -1,8 +1,6 @@
 #' Performs various consistency checks on a setup file
 #'
 #' @param file A .R file with a new simulation setup
-#' @examples
-#' check.setup("dangl2014.R")
 #' @export
 check.setup <- function(file){
 
@@ -71,21 +69,48 @@ check.setup <- function(file){
   cat("Check complete! You can upload your benchmarking setup!\n")
 }
 
+#' 3d plot of a metric metadata object
+#'
+#' @param m A metadata object (for metric data)
+#' @return A 3d plot using function \code{plot3d} from package \code{rgl}
+#' @examples
+#' m <- new("metadata.metric", 
+#'          clusters = list(c1 = list(n = 25, mu = c(4,5,4), Sigma=diag(1,3)),
+#'                          c2 = list(n = 25, mu = c(-1,-2,-2), Sigma=diag(1,3))),
+#'          dist = mvrnorm)
+#' metaplot3d(m)
+#' @export
+metaplot3d <- function(m) {
+  data <- generate.data(m)
+  if(ncol(data) < 3) stop("Function not applicable!")
+  mems <- unlist(lapply(m@clusters, function(x) x$n))
+  mems <- rep(1:length(m@clusters), mems)
+  pr <- prcomp(data)
+  prpred <- predict(pr, data)
+  if(ncol(data) == 3) rgl::plot3d(data, col= mems) else rgl::plot3d(prpred[,1:3], col=mems)
+}
+
+
 #' Plot a metadata object
 #' 
 #' @param m A metadata object
-#' @param option Only for metric data - 3d instead of 2d plot
 #' @return A plot, created by generating an instance of the dataset from the metadata object
 #' @examples
-#' m <- dangl2014(1)
-#' plot.metadata(m)
+#' m <- new("metadata.metric", 
+#'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
+#'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
+#'          dist = mvrnorm)
+#' metaplot(m)
 #' @export
-setGeneric("plot.metadata", function(m, option = "2d") {standardGeneric("plot.metadata")})
+setGeneric("metaplot", function(m) standardGeneric("metaplot"))
 
-setMethod("plot.metadata", signature(m = "metadata.metric"),
-function(m, option){
-  options(rgl.useNULL=TRUE)
-  require(rgl)
+#' Plot a metadata object
+#' 
+#' @param m A metadata object
+#' @return A plot, created by generating an instance of the dataset from the metadata object
+#' @export
+setMethod("metaplot", signature(m = "metadata.metric"),
+function(m){
   data <- generate.data(m)
   mems <- unlist(lapply(m@clusters, function(x) x$n))
   mems <- rep(1:length(m@clusters), mems)
@@ -93,14 +118,17 @@ function(m, option){
   prpred <- predict(pr, data)
   if(ncol(data) == 2) {
     plot.default(data, col= mems)
-  } else if(ncol(data) == 3 && option == "3d"){
-	plot3d(prpred[,1:3], col=mems)
   } else{
     plot.default(prpred[,1:2], col=mems) 
   }
 })
 
-setMethod("plot.metadata", signature(m = "metadata.functional"),
+#' Plot a metadata object
+#' 
+#' @param m A metadata object
+#' @return A plot, created by generating an instance of the dataset from the metadata object
+#' @export
+setMethod("metaplot", signature(m = "metadata.functional"),
 function(m){
   data <- generate.data(m)
   ppf <- rowSums(m@gridMatrix)
@@ -110,7 +138,12 @@ function(m){
   }
 })
 
-setMethod("plot.metadata", signature(m = "metadata.ordinal"),
+#' Plot a metadata object
+#' 
+#' @param m A metadata object
+#' @return A plot, created by generating an instance of the dataset from the metadata object
+#' @export
+setMethod("metaplot", signature(m = "metadata.ordinal"),
 function(m){
   data <- generate.data(m)
   k <- length(m@clusters)
@@ -143,7 +176,12 @@ function(m){
   }
 })
 
-setMethod("plot.metadata", signature(m = "metadata.binary"),
+#' Plot a metadata object
+#' 
+#' @param m A metadata object
+#' @return A plot, created by generating an instance of the dataset from the metadata object
+#' @export
+setMethod("metaplot", signature(m = "metadata.binary"),
 function(m){
   data <- generate.data(m)
   k <- length(m@clusters)
@@ -159,6 +197,7 @@ function(m){
   
   cu <- cumsum(n)
   
+  if(k < 3) form <- c(1,2)
   if(k < 5) form <- c(2,2)
   if(k > 4 && k < 10) form <- c(3,3)
   if(k > 9 && k < 17) form <- c(4,4)
@@ -245,8 +284,6 @@ create.fileskeleton <- function(newname, mail, inst, author,
     d[11+l+12] <- "  new(\"metadata.binary\", ...)"
   if(type=="randomstring")
     d[11+l+12] <- "  new(\"metadata.randomstring\", ...)"
-  if(type=="wordnet")
-    d[11+l+12] <- "  new(\"metadata.wordnet\", ...)"
   d[11+l+13] <- ""
 
 
@@ -287,8 +324,6 @@ read.metadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
 #'
 #' @param name The name of the setup
 #' @return The summary table of \code{name}
-#' @examples
-#' summarize.setup(dangl2014)
 #' @export
 summarize.setup <- function(name) {
   d <- do.call(name, list(info=T))
@@ -296,3 +331,4 @@ summarize.setup <- function(name) {
   d$summary <- cbind(setnr = 1:rows, d$summary)
   d
 }
+
