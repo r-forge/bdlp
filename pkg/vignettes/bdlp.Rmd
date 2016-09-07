@@ -125,7 +125,7 @@ that has already been described above. The second half of the function specifies
 metadata objects. The function arguments are fixed and must not be changed. In the middle, 
 the metaseedinfo parameters are applied in case random effects are used in metadata generation, 
 and the seedinfo parameters are passed on to the metadata object output. This is certainly 
-a simple example; much more complex scenario can be realised however. The package functions
+a simple example; much more complex scenarios can be realised. The package functions
 merely assemble the dataset based on the parameters supplied in the setup file cluster by cluster. 
 Therefore, any random number generating function of any R package can be used. Still, also 
 custom functions written from scratch can be used and included in the setup file. The only 
@@ -133,6 +133,94 @@ strict limitation that is imposed on the setup file is that the main function th
 used for data generation must produce the metadata files according to the structure defined in 
 the package.
 
-##Metadata object classes
+#How can I write a new benchmarking setup?
 
-coming soon...
+Essentially, by writing a new setup file that conforms to a few important rules:
+
+* the file name in the already mentioned format authorYEAR
+* the file has to contain at least one function with the same name as the setup file
+* the arguments of the main function are prescribed (setnr, seedinfo, info, metaseedinfo - 
+exactly like in the example function above)
+* the main function has to return an info table and a reference if argument info = T, or 
+a metadata object (for a specific setnr and metaseedinfo)
+* should auxiliary functions be included in the setup file, it is strongly advised to 
+name them in the format authorYear_myfunc in order to avoid conflicts with other setup files 
+which could coincidentally contain identically named functions
+
+At the moment, 5 types of metadata objects are supported: metric, ordinal, binary, functional and 
+random string data. It is of course possible to have several types of metadata in a 
+benchmarking setup. At the moment it is not yet possible to have a metadata object that
+mixes several types of data in one dataset (e.g. some metric, ordinal and binary variables), 
+but support for this is planned for the next release.
+
+The setup file does not need to be created completely from scratch; two function can 
+do that to different degrees. Function createFileskeleton creates a blank template that 
+fills in the most important information (function names, arguments, return values etc.). 
+A much more convenient solution is saveSetup - if several metadata objects have been created 
+(this in turn can be done with the help of initializeObject), a setup file can be written 
+to the disk without any further action necessary. It can be used immediately for data generation.
+A simple example looks as follows:
+
+```{r results="hide", message=F, warning=F}
+require(MASS)
+m1 <- initializeObject(type = "metric", genfunc = mvrnorm, k = 2)
+m1@clusters$cl1 <- list(n = 25, mu = c(4,5), Sigma = diag(1,2))
+m1@clusters$cl2 <- list(n = 25, mu = c(-1,-2), Sigma = diag(1,2))
+
+m2 <- initializeObject(type = "metric", genfunc = mvrnorm, k = 2)
+m2@clusters$cl1 <- list(n = 44, mu = c(1,2), Sigma = diag(1,2))
+m2@clusters$cl2 <- list(n = 66, mu = c(-5,-6), Sigma = diag(1,2))
+
+saveSetup(name="miller2012.R", author="Mister Miller", mail="mister.miller@edu.com",
+            inst="Unknown University", cit="Simple Data, pp. 23-24", objects=list(m1, m2),
+            table=data.frame(n = c(50, 110), k = c(2,2), shape = c("spherical", "spherical")))
+
+generateDatabase(name = "miller2012.R", setnr = 1, draws = 20)
+```
+
+The procedure is basically identical for ordinal, binary and random string data. Functional 
+data requires a structurally quite different metadata object. It is advised to have a look at 
+the class description for functional metadata in the package manual.
+
+```{r}
+Fun1 <- function(x){x^2}
+Fun2 <- function(x){sqrt(x)}
+Fun3 <- function(x){sin(2*pi*x)}
+functions <- list(Fun1 = Fun1, Fun2 = Fun2, Fun3 = Fun3)
+
+interval <- c(0,1)
+gridPoints <- 30
+
+sd <- 0.2
+n <- 100
+minTimePoints <- 5
+maxTimePoints <- 10
+regular <- FALSE
+
+grid <- sampleGrid(n, minTimePoints, maxTimePoints, gridPoints, regular)
+
+meta <- new("metadata.functional", functions = functions, 
+                                   gridMatrix = grid,
+                                   sd=sd,
+                                   sd_distribution="rnorm",
+                                   interval = interval, 
+                                   resolution=gridPoints,
+                                   total_n = n, 
+                                   minTimePoints = minTimePoints, 
+                                   maxTimePoints = maxTimePoints, 
+                                   regular=F)
+
+data <- generateData(meta)
+head(data)
+```
+
+#Storing and sharing setup files
+
+New setup files that are used in actual benchmarking studies can be added to the repository of 
+the Benchmark Data Library Project (link above), which is highly appreciated! This might greatly 
+help other researchers who like to use artificial data in their studies and who do not want to 
+reinvent the wheel. Furthermore, benchmarking studies are much more meaningful if methods can 
+be compared on the exact same data from another study. This is actually one of the major effects 
+that are intended to come along with using this package.
+
+

@@ -101,7 +101,10 @@ setClass("metadata.functional",
                                 minTimePoints = 2,
                                 maxTimePoints = 10,
                                 resolution = 100,
-                                regular=T))
+                                regular=T,
+                                seedinfo = list(100, 
+                                          paste(R.version$major, R.version$minor, sep = "."),
+                                          RNGkind())))
 
 #' A class that represents a metadata object for ordinal data
 #' @export

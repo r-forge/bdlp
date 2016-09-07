@@ -351,3 +351,24 @@ summarizeSetup <- function(name) {
   d
 }
 
+#' Sample grid points for functional data
+#' 
+#' @param total_n Number of Observations
+#' @param minT Minimum number of time points sampled 
+#' @param maxT Maximum number of time points sampled
+#' @param granularity Number of possible time points in total
+#' @param regular If TRUE, maxT time points are sampled at the same time points for each function
+#' @export
+#' @return A binary matrix indicating whether the function should be evaluated at a given time point
+#' @examples
+#' sampleGrid(total_n = 10, minT = 4, maxT = 10, granularity = 20)
+sampleGrid <- function(total_n,  minT, maxT, granularity, regular = FALSE){
+    gridmat <- matrix(0, total_n, granularity)
+    if(regular) points <- rep(maxT, total_n) else points <- sample(minT:maxT, total_n, replace=T)
+    if(regular) positions <- sort(sample(1:granularity, maxT))
+    for(i in 1:total_n){
+      if(regular == F) positions <- sort(sample(1:granularity, points[i]))
+      gridmat[i,positions] <- 1
+    }    
+    gridmat
+}
