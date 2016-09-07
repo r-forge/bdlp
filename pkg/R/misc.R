@@ -2,7 +2,9 @@
 #'
 #' @param file A .R file with a new simulation setup
 #' @export
-check.setup <- function(file){
+# @examples
+# checkSetup(system.file("dangl2014.R", package="bdlp"))
+checkSetup <- function(file){
 
   cat("Sourcing input file ... \n")
   tryCatch({source(file); cat("Done.\n")}, 
@@ -29,7 +31,7 @@ check.setup <- function(file){
   cat("Checking reference ... \n")
   tryCatch({
     unc <- get(name)
-    s <- summarize.setup(name)
+    s <- summarizeSetup(name)
     stopifnot(is.character(s$reference))
     cat("Done.\n")}, 
     warning = function(w) {stop("No reference.\n")},
@@ -40,7 +42,7 @@ check.setup <- function(file){
   cat("Checking whether a summary is produced ... \n")
   tryCatch({
     func <- get(name)
-    s <- summarize.setup(name)
+    s <- summarizeSetup(name)
     stopifnot(is.data.frame(s$summary))
     cat("Done.\n")
   }, 
@@ -52,13 +54,13 @@ check.setup <- function(file){
   cat("Checking whether metadata and datasets can be generated ... \n")
   tryCatch({
     func <- get(name)
-    s <- summarize.setup(name)
+    s <- summarizeSetup(name)
     runs <- nrow(s$summary)  
     
     
     for(i in 1:runs){
       meta <- func(setnr = i)
-      data <- generate.data(meta)
+      data <- generateData(meta)
     }
     cat("Done.\n")
   }, 
@@ -74,21 +76,30 @@ check.setup <- function(file){
 #' @param m A metadata object (for metric data)
 #' @return A 3d plot using function \code{plot3d} from package \code{rgl}
 #' @examples
+#' require(MASS)
 #' m <- new("metadata.metric", 
 #'          clusters = list(c1 = list(n = 25, mu = c(4,5,4), Sigma=diag(1,3)),
 #'                          c2 = list(n = 25, mu = c(-1,-2,-2), Sigma=diag(1,3))),
-#'          dist = mvrnorm)
-#' metaplot3d(m)
+#'          genfunc = mvrnorm)
+#' plot3dMetadata(m)
 #' @export
-metaplot3d <- function(m) {
-  data <- generate.data(m)
+setGeneric("plot3dMetadata", function(m) standardGeneric("plot3dMetadata"))
+
+#' 3d plot of a metric metadata object
+#'
+#' @param m A metadata object (for metric data)
+#' @return A 3d plot using function \code{plot3d} from package \code{rgl}
+# @export
+setMethod("plot3dMetadata", signature(m = "metadata.metric"),
+function(m) {
+  data <- generateData(m)
   if(ncol(data) < 3) stop("Function not applicable!")
   mems <- unlist(lapply(m@clusters, function(x) x$n))
   mems <- rep(1:length(m@clusters), mems)
   pr <- prcomp(data)
   prpred <- predict(pr, data)
   if(ncol(data) == 3) rgl::plot3d(data, col= mems) else rgl::plot3d(prpred[,1:3], col=mems)
-}
+})
 
 
 #' Plot a metadata object
@@ -96,22 +107,26 @@ metaplot3d <- function(m) {
 #' @param m A metadata object
 #' @return A plot, created by generating an instance of the dataset from the metadata object
 #' @examples
+#' require(MASS)
 #' m <- new("metadata.metric", 
 #'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
 #'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-#'          dist = mvrnorm)
-#' metaplot(m)
+#'          genfunc = mvrnorm)
+#' plotMetadata(m)
 #' @export
-setGeneric("metaplot", function(m) standardGeneric("metaplot"))
+#' @importFrom grDevices rainbow
+#' @importFrom stats prcomp predict
+#' @importFrom graphics barplot lines par plot.default
+setGeneric("plotMetadata", function(m) standardGeneric("plotMetadata"))
 
 #' Plot a metadata object
 #' 
 #' @param m A metadata object
 #' @return A plot, created by generating an instance of the dataset from the metadata object
-#' @export
-setMethod("metaplot", signature(m = "metadata.metric"),
+# @export
+setMethod("plotMetadata", signature(m = "metadata.metric"),
 function(m){
-  data <- generate.data(m)
+  data <- generateData(m)
   mems <- unlist(lapply(m@clusters, function(x) x$n))
   mems <- rep(1:length(m@clusters), mems)
   pr <- prcomp(data)
@@ -127,10 +142,10 @@ function(m){
 #' 
 #' @param m A metadata object
 #' @return A plot, created by generating an instance of the dataset from the metadata object
-#' @export
-setMethod("metaplot", signature(m = "metadata.functional"),
+# @export
+setMethod("plotMetadata", signature(m = "metadata.functional"),
 function(m){
-  data <- generate.data(m)
+  data <- generateData(m)
   ppf <- rowSums(m@gridMatrix)
   plot.default(data[1:ppf[1],2:3], type="l", xlim=c(m@interval[1], m@interval[2]), ylim=c(min(data$yvalvector), max(data$yvalvector)))
   for(i in 1:m@total_n){
@@ -142,10 +157,10 @@ function(m){
 #' 
 #' @param m A metadata object
 #' @return A plot, created by generating an instance of the dataset from the metadata object
-#' @export
-setMethod("metaplot", signature(m = "metadata.ordinal"),
+# @export
+setMethod("plotMetadata", signature(m = "metadata.ordinal"),
 function(m){
-  data <- generate.data(m)
+  data <- generateData(m)
   k <- length(m@clusters)
   
   n <- vector()
@@ -180,10 +195,10 @@ function(m){
 #' 
 #' @param m A metadata object
 #' @return A plot, created by generating an instance of the dataset from the metadata object
-#' @export
-setMethod("metaplot", signature(m = "metadata.binary"),
+# @export
+setMethod("plotMetadata", signature(m = "metadata.binary"),
 function(m){
-  data <- generate.data(m)
+  data <- generateData(m)
   k <- length(m@clusters)
   
   n <- vector()
@@ -225,7 +240,8 @@ function(m){
 #' @param infotable The setup summary table
 #' @param ref The reference to the publication where the setup was used
 #' @param codefile If functions that are needed for the data generation of the setup are stored in some other .R file, the path can be supplied
-create.fileskeleton <- function(newname, mail, inst, author, 
+#' @export
+createFileskeleton <- function(newname, mail, inst, author, 
                                 type = c("metric", "functional", "ordinal", "binary", "randomstring", "wordnet"), 
                                 infotable = NULL, ref = "Unpublished", codefile = F){
   
@@ -309,7 +325,7 @@ create.fileskeleton <- function(newname, mail, inst, author,
   }
 }
 
-read.metadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
+readMetadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
     if(is.null(seedinfo) && is.null(metaseedinfo))
       do.call(name, list(setnr=setnr))
     else if(is.null(seedinfo) && !is.null(metaseedinfo))
@@ -325,7 +341,10 @@ read.metadata <- function(name, setnr, seedinfo = NULL, metaseedinfo = NULL){
 #' @param name The name of the setup
 #' @return The summary table of \code{name}
 #' @export
-summarize.setup <- function(name) {
+# @examples
+# source(system.file("dangl2014.R", package="bdlp"))
+# summarizeSetup(dangl2014)
+summarizeSetup <- function(name) {
   d <- do.call(name, list(info=T))
   rows <- nrow(d$summary)
   d$summary <- cbind(setnr = 1:rows, d$summary)

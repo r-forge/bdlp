@@ -1,12 +1,12 @@
 #' A class to represent a metadata object
 #'
 #' @field clusters A list of cluster information
-#' @field dist  A string specifying a distribution for the random numbers
+#' @field genfunc  A string specifying a distribution for the random numbers
 #' @field seedinfo A list with the parameters for the random number generator
 #' @export
 setClass("metadata.general",
          representation(clusters = "list",
-                        dist = "function",
+                        genfunc = "function",
                         seedinfo = "list"),
 #                        vars = "numeric",
 #                        total_n = "numeric",
@@ -25,7 +25,7 @@ setClass("metadata.general",
 #                        retval <- "Number of list entries in slot 'clusters' and number of actual cluster do not match"
                       #checking whether all cluster metadata arguments are valid arguments for the data generating function
                       for(i in 1:length(object@clusters)) {
-                        if(!all(names(object@clusters[[i]]) %in% names(formals(object@dist)))){
+                        if(!all(names(object@clusters[[i]]) %in% names(formals(object@genfunc)))){
                           retval <- "Distribution function arguments and cluster metadata names do not match" 
                         }
                       }
@@ -44,6 +44,7 @@ setClass("metadata.general",
 #'
 #' @field standardization If standardization is needed, function can be supplied
 #' @export
+#' @importFrom MASS mvrnorm
 setClass("metadata.metric",
          contains = "metadata.general",
          representation = representation(standardization = "character"),
@@ -66,7 +67,7 @@ setClass("metadata.metric",
                     retval
                     },
          prototype = prototype(standardization = "NONE",
-                   dist = MASS::mvrnorm))
+                   genfunc = mvrnorm))
 
 #' A class that represents a metadata object for functional data
 #' @export           
@@ -103,28 +104,30 @@ setClass("metadata.functional",
                                 regular=T))
 
 #' A class that represents a metadata object for ordinal data
-#' @export 
+#' @export
+#' @importFrom GenOrd ordsample  
 setClass("metadata.ordinal",
          contains = "metadata.general",
          validity = function(object){
                       retval = NULL
-                      if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(object@dist))))))
+                      if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(object@genfunc))))))
                         retval <- "Nonconforming arguments found in slot 'clusters'"
                       retval
          },
-         prototype = prototype(dist = GenOrd::ordsample))
+         prototype = prototype(genfunc = ordsample))
          
 #' A class that represents a metadata object for binary data
-#' @export          
+#' @export
+#' @importFrom MultiOrd generate.binary          
 setClass("metadata.binary",
          contains = "metadata.general",
          validity = function(object){
 			          retval = NULL
-			          if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(object@dist))))))
+			          if(!all(unlist(lapply(object@clusters, function(x) names(x) %in% names(formals(object@genfunc))))))
                       retval <- "Nonconforming arguments found in slot 'clusters'"
                       retval
 	     },
-		 prototype = prototype(dist = MultiOrd::generate.binary))
+		 prototype = prototype(genfunc = generate.binary))
 		 
 #' A class that represents a metadata object for string data
 #' @export 

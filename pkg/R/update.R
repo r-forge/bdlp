@@ -3,16 +3,17 @@
 #' @param m A metadata object
 #' @return A metadata object with an empty additional cluster
 #' @examples
+#' require(MASS)
 #' m <- new("metadata.metric", 
 #'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
 #'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-#'          dist = mvrnorm)
-#' m2 <- add.cluster(m)
+#'          genfunc = mvrnorm)
+#' m2 <- addCluster(m)
 #' @export
-add.cluster <- function(m){
+addCluster <- function(m){
   prev <- length(m@clusters)
   new <- paste("cl", prev + 1, sep="")
-  eval(parse(text=(paste("m@clusters$", new, " <- formals(m@dist)", sep=""))))
+  eval(parse(text=(paste("m@clusters$", new, " <- formals(m@genfunc)", sep=""))))
   return(m)
 }
 
@@ -22,13 +23,14 @@ add.cluster <- function(m){
 #' @param clnumber The cluster to delete
 #' @return A metadata object
 #' @examples
+#' require(MASS)
 #' m <- new("metadata.metric", 
 #'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
 #'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-#'          dist = mvrnorm)
-#' m2 <- delete.cluster(m, 2)
+#'          genfunc = mvrnorm)
+#' m2 <- deleteCluster(m, 2)
 #' @export
-delete.cluster <- function(m, clnumber){
+deleteCluster <- function(m, clnumber){
   m@clusters <- m@clusters[-clnumber]
   l <- length(names(m@clusters))
   names(m@clusters) <- paste("cl", 1:l, sep="")
@@ -40,13 +42,15 @@ delete.cluster <- function(m, clnumber){
 #'
 #' @param type The data type for the new object
 #' @param k Number of clusters
-#' @param distfunc The distribution function for data generation
+#' @param genfunc The distribution function for data generation
 #' @param seed The random number seed parameters for the data generation
 #' @return A metadata object
 #' @examples
-#' initialize.object(type = "metric", k = 3, distfunc = mvrnorm)
+#' require(MASS)
+#' initializeObject(type = "metric", k = 3, genfunc = mvrnorm)
 #' @export
-initialize.object <- function(type, k, distfunc, seed = list(100, 
+#' @importFrom methods new
+initializeObject <- function(type, k, genfunc, seed = list(100, 
                                       paste(R.version$major, R.version$minor, sep = "."),
                                       RNGkind())){
   
@@ -59,9 +63,9 @@ initialize.object <- function(type, k, distfunc, seed = list(100,
   cl <- paste("cl", 1:k, sep="")
   clusters <- list()
   clusters <- sapply(cl,function(x) NULL)
-  clusters <- lapply(clusters, function(x) formals(distfunc))
+  clusters <- lapply(clusters, function(x) formals(genfunc))
   
-  new(type, clusters=clusters, seedinfo=seed, dist=distfunc)
+  new(type, clusters=clusters, seedinfo=seed, genfunc=genfunc)
 
 }
 
@@ -80,19 +84,20 @@ initialize.object <- function(type, k, distfunc, seed = list(100,
 #' @param custom_name Custom filename that deviates from the authorYear format
 #' @return A .R file that can be processed by \code{create.dataset}
 #' @examples
+#' require(MASS)
 #' a = new("metadata.metric", 
 #'         clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
 #'                         c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-#'                         dist = mvrnorm)
+#'                         genfunc = mvrnorm)
 #' b = new("metadata.metric", 
 #'         clusters = list(c1 = list(n = 44, mu = c(1,2), Sigma=diag(1,2)),
 #'                         c2 = list(n = 66, mu = c(-5,-6), Sigma=diag(1,2))),
-#'                         dist = mvrnorm)
-#' save.setup(name="test2002.R", author="Mister Twister", mail="mister.twister@edu.com",
+#'                         genfunc = mvrnorm)
+#' saveSetup(name="test2002.R", author="Mister Twister", mail="mister.twister@edu.com",
 #'            inst="Twister University", cit="Simple Data, pp. 23-24", objects=list(a, b),
 #'            table=data.frame(n = c(50, 110), k = c(2,2), shape = c("spherical", "spherical")))  
 #' @export
-save.setup <- function(name, author, mail, inst, 
+saveSetup <- function(name, author, mail, inst, 
                        cit = "Unpublished", objects, table, 
                        seedinfo = list(100, 
                                       paste(R.version$major, R.version$minor, sep = "."),

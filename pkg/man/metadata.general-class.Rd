@@ -12,7 +12,7 @@ A class to represent a metadata object
 \describe{
 \item{\code{clusters}}{A list of cluster information}
 
-\item{\code{dist}}{A string specifying a distribution for the random numbers}
+\item{\code{genfunc}}{A string specifying a distribution for the random numbers}
 
 \item{\code{seedinfo}}{A list with the parameters for the random number generator}
 }}

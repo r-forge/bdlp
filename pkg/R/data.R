@@ -6,19 +6,21 @@
 #' @param seedinfo The random number generator seed parameters
 #' @param metaseedinfo If necessary, a separate set of random number generator parameters for the metadata (e.g. cluster centers)
 #' @param file A custom file name for the output database. Defaults to the pattern setupname_setnr_seed.db
-#' @param increment The random number seed will increase by 1 for each draw from the base seed given in seedinfo
+#' @param seedincrement The random number seed will by default increase by 1 for each draw from the base seed given in seedinfo unless specified otherwise here
 #' @return An SQLite database that contains the desired number of data sets drawn from a certain metadata scenario
-# @examples
-# create.dataset(name="dangl2014.R", setnr=1, draws=10)
+#  @examples
+#  source(system.file("dangl2014.R", package="bdlp"))
+#  generateDatabase(name="dangl2014.R", setnr=1, draws=10)
 #' @export
-create.dataset <- function(name = NULL, setnr = NULL, draws = 1,  
+#' @importFrom utils capture.output txtProgressBar setTxtProgressBar
+generateDatabase <- function(name = NULL, setnr = NULL, draws = 1,  
                            seedinfo = list(100, 
                                            paste(R.version$major, R.version$minor, sep = "."),
                                            RNGkind()), 
                            metaseedinfo = list(100, 
                                            paste(R.version$major, R.version$minor, sep = "."),
                                            RNGkind()),
-                           file = NULL, increment = T){
+                           file = NULL, seedincrement = 1){
 
   if(!is.null(name)) source(name)
   spl <- strsplit(name, "/")
@@ -38,10 +40,10 @@ create.dataset <- function(name = NULL, setnr = NULL, draws = 1,
   }
   
   for(i in 1:draws){
-    if(increment == T) seedinfo[[1]] <- seedinfo[[1]] + 1
-    metadata <- read.metadata(name = name, setnr = setnr, seedinfo = seedinfo, metaseedinfo = metaseedinfo)
-    output <- generate.data(metadata)
-    write.Database(output, dbname, i) 
+    seedinfo[[1]] <- seedinfo[[1]] + seedincrement
+    metadata <- readMetadata(name = name, setnr = setnr, seedinfo = seedinfo, metaseedinfo = metaseedinfo)
+    output <- generateData(metadata)
+    writeDatabase(output, dbname, i) 
     Sys.sleep(0.1)
     setTxtProgressBar(pb, i)
   }
@@ -57,20 +59,21 @@ create.dataset <- function(name = NULL, setnr = NULL, draws = 1,
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @examples
+#' require(MASS)
 #' m <- new("metadata.metric", 
 #'          clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
 #'                          c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
-#'          dist = mvrnorm)
-#' generate.data(m)
+#'          genfunc = mvrnorm)
+#' generateData(m)
 #' @export
-setGeneric("generate.data", function(m) {standardGeneric("generate.data")})
+setGeneric("generateData", function(m) {standardGeneric("generateData")})
 
 #' Generate a dataset from a metadata object
 #'
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @export
-setMethod("generate.data", signature(m = "metadata.metric"),
+setMethod("generateData", signature(m = "metadata.metric"),
 function(m){
 	
   set.seed(m@seedinfo[[1]])
@@ -86,7 +89,7 @@ function(m){
       vars <- ncol(m@clusters[[1]][[i]])
   }
   
-  samp <- m@dist
+  samp <- m@genfunc
   
   datamatrix <- matrix(0, nrow=total_n, ncol=vars)
   
@@ -109,7 +112,7 @@ function(m){
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @export
-setMethod("generate.data", signature(m = "metadata.functional"), 
+setMethod("generateData", signature(m = "metadata.functional"), 
 function(m){
   
   set.seed(m@seedinfo[[1]])
@@ -145,13 +148,13 @@ function(m){
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @export
-setMethod("generate.data", signature(m = "metadata.ordinal"),
+setMethod("generateData", signature(m = "metadata.ordinal"),
 function(m){
   
   set.seed(m@seedinfo[[1]])
   RNGversion(m@seedinfo[[2]])
   RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
-  samp <- m@dist
+  samp <- m@genfunc
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
   for(i in 1:length(m@clusters$c1)){
@@ -175,13 +178,13 @@ function(m){
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @export
-setMethod("generate.data", signature(m = "metadata.binary"),
+setMethod("generateData", signature(m = "metadata.binary"),
 function(m){
   
   set.seed(m@seedinfo[[1]])
   RNGversion(m@seedinfo[[2]])
   RNGkind(m@seedinfo[[3]][1], m@seedinfo[[3]][2])
-  samp <- m@dist
+  samp <- m@genfunc
   total_n <- sum(unlist(lapply(m@clusters, function(x) x$n)))
   k <- length(m@clusters)
   for(i in 1:length(m@clusters$c1)){
@@ -224,7 +227,7 @@ function(m){
 #' @param m A metadata object
 #' @return A dataset as specified by the metadata object
 #' @export
-setMethod("generate.data", signature(m = "metadata.randomstring"),
+setMethod("generateData", signature(m = "metadata.randomstring"),
 function(m){
   set.seed(m@seedinfo[[1]])
   RNGversion(m@seedinfo[[2]])
@@ -249,9 +252,9 @@ function(m){
 #' @param method The string distance method used to calculate the string, defaults to Levensthein distance
 #' @return A character string
 #' @examples
-#' get.randomstrings(center="hello", maxdist = 2, n = 5)
+#' getRandomstrings(center="hello", maxdist = 2, n = 5)
 #' @export
-get.randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(center), n = 1, method = "lv"){
+getRandomstrings <- function(center = NULL, maxdist = NULL, length = nchar(center), n = 1, method = "lv"){
   l <- vector()
   l[1:n] <- ""
   for(i in 1:n){
@@ -266,13 +269,14 @@ get.randomstrings <- function(center = NULL, maxdist = NULL, length = nchar(cent
   return(l)
 }
 
-write.Database <- function(output, dbname, draw){
-  driver <- dbDriver("SQLite")
-  con <- dbConnect(driver, dbname)
+writeDatabase <- function(output, dbname, draw){
+  requireNamespace("RSQLite")
+  driver <- DBI::dbDriver("SQLite")
+  con <- RSQLite::dbConnect(driver, dbname)
   if(draw == 1)
-    dbWriteTable(con, paste("draw", draw, sep="_"), output, row.names=FALSE)
+    RSQLite::dbWriteTable(con, paste("draw", draw, sep="_"), output, row.names=FALSE)
   else
-    dbWriteTable(con, paste("draw", draw, sep="_"), output, append=T, row.names=FALSE)
+    RSQLite::dbWriteTable(con, paste("draw", draw, sep="_"), output, append=T, row.names=FALSE)
 }
 
 

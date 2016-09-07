@@ -1,0 +1,138 @@
+---
+title: "The Benchmark Data Library Project - a Framework for Artificial Data Generation"
+author: "Rainer Dangl "
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+#Introduction
+
+The Benchmark Data Library Project introduces a new way to approach
+the design and generation of artificial data. It is not primarily 
+aimed to be a dedicated data generator - it rather provides a 
+framework to enable the researcher to efficiently code 
+easily understandable and reproducible artificial data. The 
+entire concept is based on the notion of merely working with 
+a standardized format for the metadata. All information that is 
+needed for actual data generation is found in a single .R file, 
+the format of which is strictly prescribed.
+
+#How can I get data?
+
+That depends on whether you have a suitable .R file. You can either 
+obtain one from the metadata repository that serves as a common place
+to share benchmarking setups ([BDLP Repository](https://rdangl.shinyapps.io/bdlp_2/)). If
+you do not have such a file, you need to write one yourself - the package 
+does not provide an implementation that allows immediate data generation by 
+just calling a function and passing a few arguments. A .R file (which shall 
+be called setup file in the following) is absolutely necessary.
+
+If you have a setup file - such a file containing a VERY simple benchmarking
+setup that consists of two simple metric 2d datasets is included in the package
+and can be sourced with
+
+```{r}
+library(bdlp)
+source(system.file("dangl2014.R", package = "bdlp"))
+```
+
+The file only contains one function which has to be of the same name 
+as the file name - always authorYEAR. If several benchmarking setups 
+are available for the same author in one year, additional indication of 
+this fact by authorYEARa/b/c/etc. are permissible. This function can return 
+two things; either a summary about the setup:
+
+```{r}
+dangl2014(info=T)
+```
+
+or a metadata object of one of the two available datasets. This is 
+done by merely providing the the set nr and results in the following object:
+
+```{r}
+library(MASS)
+meta <- dangl2014(setnr=1)
+meta
+```
+
+The object consists of several slots. Most importantly, the slot genfunc
+contains the random number generating function (in this case the default mvrnorm).
+The second important slot is clusters, which contains the parameters that are needed by 
+genfunc to generate data. It is important to notice that the parameters in clusters are
+identical to the arguments needed by genfunc. Two other slots are quite crutial for 
+processing the metadata object: metaseedinfo and seedinfo. The former sets the random number 
+generator parameters for the purpose of calculating the metadata object. For example, if the 
+cluster centers were to be chosen randomly and not in a fixed way like in the case at hand, the 
+metaseedinfo parameters ensure reproducibility of a particular metadata object. The latter, 
+seedinfo, is information that is sent along with the metadata object to the the function that 
+generates the actual random numbers of the dataset. It can be practical to have these two sets 
+of random number generator parameters - if not needed, they default to the same set of arguments.
+Therefore, if a metadata object has been created, one can generate the actual numbers. This can 
+be done for one single data set from this particular metadata scenario by
+
+```{r}
+library(MASS)
+data <- generateData(meta)
+head(data)
+```
+
+If a different random number seed is needed this can be done by
+
+```{r}
+meta <- dangl2014(1, seedinfo = list(120, "3.1.3", c("Mersenne-Twister", "Inversion")))
+data <- generateData(meta)
+head(data)
+```
+
+This data can then be plotted with the commonly used plot functions. Yet still, 
+it is also possible to catch a glimpse of the structure of the data by plotting a metadata 
+object directly. For this purpose, an instance of the dataset is generated automatically, which
+saves a few steps in-between.
+
+```{r}
+meta <- dangl2014(setnr=1)
+plotMetadata(meta)
+```
+
+However, generally one may require for benchmarking purposes a large 
+number of datasets drawn from owe particular metadata scenario. This 
+works as follows:
+
+```{r results="hide", message=F, warning=F}
+generateDatabase(name = system.file("dangl2014.R", package = "bdlp"), setnr = 1, draws = 50)
+```
+
+Which creates an SQLite database in the current working directory that contains 
+50 datasets drawn from matadata object 1 of the setup name. Of course, metaseedinfo and 
+seedinfo is also available here. The random number seed start at a certain base value 
+(default 100) and increments by 1 for each draw. Therefor draw number 1 uses seed 101, etc. 
+If a different incrementation factor is desired, one can set argument increment to this value.
+
+#How does it work?
+
+In order to explore the concept in more depth we look at the function that is in the 
+setup file:
+
+```{r}
+dangl2014
+```
+
+Again, we can see that the first part of the function provides the information output 
+that has already been described above. The second half of the function specifies the 
+metadata objects. The function arguments are fixed and must not be changed. In the middle, 
+the metaseedinfo parameters are applied in case random effects are used in metadata generation, 
+and the seedinfo parameters are passed on to the metadata object output. This is certainly 
+a simple example; much more complex scenario can be realised however. The package functions
+merely assemble the dataset based on the parameters supplied in the setup file cluster by cluster. 
+Therefore, any random number generating function of any R package can be used. Still, also 
+custom functions written from scratch can be used and included in the setup file. The only 
+strict limitation that is imposed on the setup file is that the main function that is then 
+used for data generation must produce the metadata files according to the structure defined in 
+the package.
+
+##Metadata object classes
+
+coming soon...

@@ -1,17 +1,20 @@
 Package: bdlp
-Version: 0.1
-Date: 2016-08-23
-Authors@R: c(person(given="ainer", family="Dangl",
+Version: 1.0
+Date: 2016-09-06
+Authors@R: c(person(given="Rainer", family="Dangl",
         email="rainer.dangl@boku.ac.at", role=c("aut", "cre")))
-Title: A package for transparent artificial data generation
-Depends: R (>= 3.0.0), graphics, RSQLite, MASS
-Imports: GenOrd, MultiOrd, stringdist, rgl
-Description: The package contains functions that process .R files that 
+Title: A Package for Transparent Artificial Data Generation
+Depends: R (>= 3.0.0), graphics
+Imports: GenOrd, MultiOrd, stringdist, rgl, RSQLite, MASS, DBI, methods, grDevices, stats, utils
+Description: The main function generateDataset can process .R files that 
   contain descriptions of artificial data metadata and also store new 
   files. The format of these benchmark setup files is outlined in the 
-  package vignette.
+  package vignette, the respective classes of metadata are defined in the package.
 License: GPL-2
 LazyLoad: yes
-Author: Rainer Dangl
+Author: Rainer Dangl [aut, cre]
 Maintainer: Rainer Dangl <rainer.dangl@boku.ac.at>
 RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
