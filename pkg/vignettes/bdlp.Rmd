@@ -58,16 +58,16 @@ meta <- dangl2014(setnr=1)
 meta
 ```
 
-The object consists of several slots. Most importantly, the slot genfunc
-contains the random number generating function (in this case the default mvrnorm).
-The second important slot is clusters, which contains the parameters that are needed by 
-genfunc to generate data. It is important to notice that the parameters in clusters are
-identical to the arguments needed by genfunc. Two other slots are quite crutial for 
-processing the metadata object: metaseedinfo and seedinfo. The former sets the random number 
+The object consists of several slots. Most importantly, the slot `genfunc`
+contains the random number generating function (in this case the default `mvrnorm`).
+The second important slot is `clusters`, which contains the parameters that are needed by 
+`genfunc` to generate data. It is important to notice that the parameters in `clusters` are
+identical to the arguments needed by `genfunc`. Two other slots are quite crucial for 
+processing the metadata object: `metaseedinfo` and `seedinfo`. The former sets the random number 
 generator parameters for the purpose of calculating the metadata object. For example, if the 
 cluster centers were to be chosen randomly and not in a fixed way like in the case at hand, the 
-metaseedinfo parameters ensure reproducibility of a particular metadata object. The latter, 
-seedinfo, is information that is sent along with the metadata object to the the function that 
+`metaseedinfo` parameters ensure reproducibility of a particular metadata object. The latter, 
+`seedinfo`, is information that is sent along with the metadata object to the the function that 
 generates the actual random numbers of the dataset. It can be practical to have these two sets 
 of random number generator parameters - if not needed, they default to the same set of arguments.
 Therefore, if a metadata object has been created, one can generate the actual numbers. This can 
@@ -98,7 +98,7 @@ plotMetadata(meta)
 ```
 
 However, generally one may require for benchmarking purposes a large 
-number of datasets drawn from owe particular metadata scenario. This 
+number of datasets drawn from one particular metadata scenario. This 
 works as follows:
 
 ```{r results="hide", message=F, warning=F}
@@ -106,10 +106,10 @@ generateDatabase(name = system.file("dangl2014.R", package = "bdlp"), setnr = 1,
 ```
 
 Which creates an SQLite database in the current working directory that contains 
-50 datasets drawn from matadata object 1 of the setup name. Of course, metaseedinfo and 
-seedinfo is also available here. The random number seed start at a certain base value 
-(default 100) and increments by 1 for each draw. Therefor draw number 1 uses seed 101, etc. 
-If a different incrementation factor is desired, one can set argument increment to this value.
+50 datasets drawn from matadata object 1 of the setup name. Of course, `metaseedinfo` and 
+`seedinfo` is also available here. The random number seed starts at a certain base value 
+(default 100) and increments by 1 for each draw. Therefore draw number 1 uses seed 101, etc. 
+If a different increment step is desired, one can set the argument `increment` to this value.
 
 #How does it work?
 
@@ -135,16 +135,16 @@ the package.
 
 #How can I write a new benchmarking setup?
 
-Essentially, by writing a new setup file that conforms to a few important rules:
+Essentially, by writing a new setup file that complies with a few important rules:
 
 * the file name in the already mentioned format authorYEAR
 * the file has to contain at least one function with the same name as the setup file
 * the arguments of the main function are prescribed (setnr, seedinfo, info, metaseedinfo - 
 exactly like in the example function above)
-* the main function has to return an info table and a reference if argument info = T, or 
-a metadata object (for a specific setnr and metaseedinfo)
+* the main function has to return an info table and a reference if argument `info = T`, or 
+a metadata object (for a specific `setnr` and `metaseedinfo`)
 * should auxiliary functions be included in the setup file, it is strongly advised to 
-name them in the format authorYear_myfunc in order to avoid conflicts with other setup files 
+name them in the format `authorYear_myfunc` in order to avoid conflicts with other setup files 
 which could coincidentally contain identically named functions
 
 At the moment, 5 types of metadata objects are supported: metric, ordinal, binary, functional and 
@@ -154,10 +154,10 @@ mixes several types of data in one dataset (e.g. some metric, ordinal and binary
 but support for this is planned for the next release.
 
 The setup file does not need to be created completely from scratch; two function can 
-do that to different degrees. Function createFileskeleton creates a blank template that 
+do that to different degrees. Function `createFileskeleton` creates a blank template that 
 fills in the most important information (function names, arguments, return values etc.). 
 A much more convenient solution is saveSetup - if several metadata objects have been created 
-(this in turn can be done with the help of initializeObject), a setup file can be written 
+(this in turn can be done with the help of `initializeObject`), a setup file can be written 
 to the disk without any further action necessary. It can be used immediately for data generation.
 A simple example looks as follows:
 
@@ -180,7 +180,8 @@ generateDatabase(name = "miller2012.R", setnr = 1, draws = 20)
 
 The procedure is basically identical for ordinal, binary and random string data. Functional 
 data requires a structurally quite different metadata object. It is advised to have a look at 
-the class description for functional metadata in the package manual.
+the class description for functional metadata in the package manual. An example for functional 
+data works as follows:
 
 ```{r}
 Fun1 <- function(x){x^2}
