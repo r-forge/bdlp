@@ -7,6 +7,7 @@ vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+
 ---
 #Introduction
 
@@ -92,7 +93,7 @@ it is also possible to catch a glimpse of the structure of the data by plotting 
 object directly. For this purpose, an instance of the dataset is generated automatically, which
 saves a few steps in-between.
 
-```{r}
+```{r, fig.width=5, fig.height=5, fig.align='center'}
 meta <- dangl2014(setnr=1)
 plotMetadata(meta)
 ```
@@ -113,11 +114,42 @@ If a different increment step is desired, one can set the argument `increment` t
 
 #How does it work?
 
-In order to explore the concept in more depth we look at the function that is in the 
-setup file:
+In order to explore the concept in more depth we look at the function body that is in the 
+included setup file:
 
 ```{r}
-dangl2014
+dangl2014 <- function(setnr = NULL, 
+                      seedinfo = list(100, 
+                                      paste(R.version$major, R.version$minor, sep = "."),
+                                      RNGkind()), 
+                      info = FALSE, 
+                      metaseedinfo = list(100, 
+                                          paste(R.version$major, R.version$minor, sep = "."),
+                                          RNGkind())){
+
+  inf <- data.frame(n = c(50, 40), k = c(2,2), shape = c("spherical", "spherical"))
+  ref <- "Dangl R. (2014) A small simulation study. Journal of Simple Datasets 10(2), 1-10"
+  if(info == T) return(list(summary = inf, reference = ref))
+
+  if(is.null(metaseedinfo)) metaseedinfo <- seedinfo
+
+  set.seed(metaseedinfo[[1]])
+  RNGversion(metaseedinfo[[2]])
+  RNGkind(metaseedinfo[[3]][1], metaseedinfo[[3]][2])
+
+  if(setnr == 1) {
+    return(new("metadata.metric", 
+      clusters = list(c1 = list(n = 25, mu = c(4,5), Sigma=diag(1,2)),
+                      c2 = list(n = 25, mu = c(-1,-2), Sigma=diag(1,2))),
+      genfunc = MASS::mvrnorm, seedinfo = seedinfo))
+  }
+  if(setnr == 2){
+    return(new("metadata.metric", 
+      clusters = list(c1 = list(n = 20, mu = c(0,2), Sigma=diag(1,2)),
+                      c2 = list(n = 20, mu = c(-1,-2), Sigma=diag(1,2))),
+      genfunc = MASS::mvrnorm, seedinfo = seedinfo))
+  }
+}
 ```
 
 Again, we can see that the first part of the function provides the information output 
